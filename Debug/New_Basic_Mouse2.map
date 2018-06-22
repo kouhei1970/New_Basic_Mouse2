@@ -1,0 +1,99 @@
+Renesas Optimizing Linker (W2.08.00 )             22-Jun-2018 17:39:22
+
+*** Options ***
+
+-noprelink
+-subcommand=LinkerSubCommand.tmp
+-input=".\src\ADC.obj"
+-input=".\src\Battery.obj"
+-input=".\src\Buzzer.obj"
+-input=".\src\Clock.obj"
+-input=".\src\Control.obj"
+-input=".\src\E2Flash_RX220.obj"
+-input=".\src\Interrupt.obj"
+-input=".\src\Log.obj"
+-input=".\src\Map.obj"
+-input=".\src\Motor.obj"
+-input=".\src\My_Func.obj"
+-input=".\src\New_Basic_Mouse2.obj"
+-input=".\src\Run.obj"
+-input=".\src\SCI.obj"
+-input=".\src\UI.obj"
+-input=".\src\Wait.obj"
+-input=".\src\Wall_Sensor.obj"
+-input=".\src\dbsct.obj"
+-input=".\src\hardware_setup.obj"
+-input=".\src\interrupt_handlers.obj"
+-input=".\src\reset_program.obj"
+-input=".\src\sbrk.obj"
+-input=".\src\vector_table.obj"
+-input=".\src\xprintf.obj"
+-library=".\New_Basic_Mouse2.lib"
+-start=SU,SI,B_1,R_1,B_2,R_2,B,R/04,PResetPRG,C_1,C_2,C,C$*,D*,W*,L,PIntPRG,P/0FFFC0000,FIXEDVECT/0FFFFFF80
+-output=New_Basic_Mouse2.abs
+-form=absolute
+-nomessage
+-list=New_Basic_Mouse2.map
+-nooptimize
+-rom=D=R,D_1=R_1,D_2=R_2
+-nologo
+
+*** Error information ***
+
+*** Mapping List ***
+
+SECTION                            START      END         SIZE   ALIGN
+SU
+                                  00000004  00000103       100   4
+SI
+                                  00000104  00000403       300   4
+B_1
+                                  00000404  00000511       10e   1
+R_1
+                                  00000512  00000517         6   1
+B_2
+                                  00000518  00000539        22   2
+R_2
+                                  0000053a  00000545         c   2
+B
+                                  00000548  00003853      330c   4
+R
+                                  00003854  00003857         4   4
+PResetPRG
+                                  fffc0000  fffc002d        2e   1
+C_1
+                                  fffc002e  fffc002e         0   1
+C_2
+                                  fffc002e  fffc004f        22   2
+C
+                                  fffc0050  fffc0083        34   4
+C$DSEC
+                                  fffc0084  fffc00a7        24   4
+C$BSEC
+                                  fffc00a8  fffc00bf        18   4
+C$INIT
+                                  fffc00c0  fffc00c0         0   1
+C$VECT
+                                  fffc00c0  fffc04bf       400   4
+C$VTBL
+                                  fffc04c0  fffc04c0         0   1
+D_2
+                                  fffc04c0  fffc04cb         c   2
+D_1
+                                  fffc04cc  fffc04d1         6   1
+D
+                                  fffc04d4  fffc04d7         4   4
+W
+                                  fffc04d8  fffc04d8         0   4
+W_1
+                                  fffc04d8  fffc04e7        10   1
+W_2
+                                  fffc04e8  fffc04e8         0   2
+L
+                                  fffc04e8  fffc05e9       102   4
+PIntPRG
+                                  fffc05ea  fffc070a       121   1
+P
+                                  fffc070b  fffc2d88      267e   1
+FIXEDVECT
+                                  ffffff80  ffffffff        80   4

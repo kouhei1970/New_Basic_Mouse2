@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="com.renesas.cdt.launch.dsf.simulator.launchConfigurationType">
+<intAttribute key="com.renesas.cdt.core.admPortNumber" value="61236"/>
+<stringAttribute key="com.renesas.cdt.core.initCommands" value=""/>
+<stringAttribute key="com.renesas.cdt.core.ipAddress" value="localhost"/>
+<stringAttribute key="com.renesas.cdt.core.jtagDeviceId" value="com.renesas.hardwaredebug.simulator.rx"/>
+<booleanAttribute key="com.renesas.cdt.core.loadImage" value="true"/>
+<stringAttribute key="com.renesas.cdt.core.optionInitCommands" value=""/>
+<intAttribute key="com.renesas.cdt.core.portNumber" value="61234"/>
+<stringAttribute key="com.renesas.cdt.core.runCommands" value=""/>
+<stringAttribute key="com.renesas.cdt.core.secondGDBExe" value="green_dsp-elf-gdb"/>
+<intAttribute key="com.renesas.cdt.core.secondGdbPortNumber" value="61237"/>
+<stringAttribute key="com.renesas.cdt.core.serverParam" value="-g SIMULATOR  -t R5F52206  -p 61234 -d 61236 -uPeripheralClkRatio= 1 -uCpuClkFreq= 12 -uRegisterSetting= 0 -uModePin= 0 -uCacheDecode= 1 -n 0 -uWorkRamAddress= 0 -uTraceCapture= 1 -uEmStopInt= 1 -uEmStopInterrupt= 1 -uEmStopFPexp= 1"/>
+<booleanAttribute key="com.renesas.cdt.core.setResume" value="true"/>
+<booleanAttribute key="com.renesas.cdt.core.setStopAt" value="true"/>
+<stringAttribute key="com.renesas.cdt.core.stopAt" value="main"/>
+<stringAttribute key="com.renesas.cdt.core.targetDevice" value="R5F52206"/>
+<booleanAttribute key="com.renesas.cdt.core.useRemoteTarget" value="true"/>
+<stringAttribute key="com.renesas.cdt.launch.dsf.IO_MAP" value="${eclipse_home}"/>
+<booleanAttribute key="com.renesas.cdt.launch.dsf.USE_DEFAULT_IO_MAP" value="true"/>
+<stringAttribute key="com.renesas.cdt.launch.dsf.launchSeqType" value="com.renesas.cdt.launch.dsf.launchSequence.e2GdbServer"/>
+<stringAttribute key="com.renesas.cdt.launch.dsf.serverPath" value="${renesas.support.targetLoc:rx-debug}\e2-server-gdb"/>
+<booleanAttribute key="com.renesas.hardwaredebug.e1.le" value="true"/>
+<booleanAttribute key="com.renesas.hardwaredebug.simulator.rx.cacheDecode" value="true"/>
+<stringAttribute key="com.renesas.hardwaredebug.simulator.rx.cpu" value="12"/>
+<stringAttribute key="com.renesas.hardwaredebug.simulator.rx.ioModules" value=""/>
+<booleanAttribute key="com.renesas.hardwaredebug.simulator.rx.le" value="true"/>
+<stringAttribute key="com.renesas.hardwaredebug.simulator.rx.mode" value="0"/>
+<stringAttribute key="com.renesas.hardwaredebug.simulator.rx.mode_pin" value="0"/>
+<intAttribute key="com.renesas.hardwaredebug.simulator.rx.peripheralClkRatio" value="0"/>
+<booleanAttribute key="com.renesas.hardwaredebug.simulator.rx.stop_fp_except" value="true"/>
+<booleanAttribute key="com.renesas.hardwaredebug.simulator.rx.stop_int" value="true"/>
+<booleanAttribute key="com.renesas.hardwaredebug.simulator.rx.stop_interrupt" value="true"/>
+<booleanAttribute key="com.renesas.hardwaredebug.simulator.rx.traceCapture" value="true"/>
+<intAttribute key="com.renesas.hardwaredebug.simulator.rx.work_ram_start" value="0"/>
+<booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.useProjBinaryForImage" value="true"/>
+<booleanAttribute key="org.eclipse.cdt.debug.gdbjtag.core.useProjBinaryForSymbols" value="true"/>
+<stringAttribute key="org.eclipse.cdt.dsf.gdb.DEBUG_NAME" value="rx-elf-gdb"/>
+<booleanAttribute key="org.eclipse.cdt.dsf.gdb.NON_STOP" value="true"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/New_Basic_Mouse2.x"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="New_Basic_Mouse2"/>
+<booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="true"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.renesas.cdt.managedbuild.renesas.ccrx.debug.configuration.377163701"/>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/New_Basic_Mouse2"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="4"/>
+</listAttribute>
+<booleanAttribute key="org.eclipse.debug.ui.ATTR_LAUNCH_IN_BACKGROUND" value="false"/>
+<stringAttribute key="process_factory_id" value="org.eclipse.cdt.dsf.gdb.GdbProcessFactory"/>
+</launchConfiguration>
