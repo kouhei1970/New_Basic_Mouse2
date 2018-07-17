@@ -24,7 +24,6 @@ void control_speed(void)
 
 	//加速度は常に正にする
 	acceleration = my_abs(acceleration);
-
 	//台形加速
 	if(now_speed < target_speed){
 		now_speed += acceleration;
@@ -40,18 +39,37 @@ void control_speed(void)
 		}
 	}
 
-	now_speed_l = now_speed_r = now_speed;
 
 	short wall_diff;
 
 	switch(run_mode){
 	case STRAIGHT://直進
+		now_speed_l = now_speed_r = now_speed;
 		//壁制御
 		wall_diff = get_wall_diff() * wall_gain / 100;
 		now_speed_l += wall_diff;
 		now_speed_r -= wall_diff;
 		break;
+	case STRAIGHT_DIAG://斜め直進
+		now_speed_l = now_speed_r = now_speed;
+		//壁制御
+		wall_diff = get_wall_diff_diag() * wall_gain / 100;
+		now_speed_l += wall_diff;
+		now_speed_r -= wall_diff;
+		break;
+	case SLALOM://スラローム
+		if(turn_dir == 1){
+			now_speed_l -= acceleration;
+			now_speed_r += acceleration;
+		}
+		else if(turn_dir == -1){
+			now_speed_l += acceleration;
+			now_speed_r -= acceleration;
+		}
+
+		break;
 	case TURN://その場ターン
+		now_speed_l = now_speed_r = now_speed;
 		if(turn_dir == 1)		{now_speed_l = -now_speed_l;}
 		else if(turn_dir == -1)	{now_speed_r = -now_speed_r;}
 		break;

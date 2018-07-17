@@ -1,6 +1,6 @@
 /****************************************************************************/
 /*																			*/
-/*			NewBasicMouse ver 0.1			2017/06/13						*/
+/*			NewBasicMouse ver 0.1			2018/07/14						*/
 /*																			*/
 /****************************************************************************/
 
@@ -23,7 +23,7 @@
 #include "Control.h"
 #include "Run.h"
 #include "Log.h"
-
+#include "search.h"
 
 void mode0(void);
 void mode1(void);
@@ -59,26 +59,7 @@ void main(void)
 //タクトスイッチを押したらLED点灯
 void mode0(void)
 {
-	while(1){
-		if(get_sw_state(DOWN)){
-			LED_on(1);
-		}
-		else{
-			LED_off(1);
-		}
-		if(get_sw_state(UP)){
-			LED_on(2);
-		}
-		else{
-			LED_off(2);
-		}
-		if(get_sw_state(EXEC)){
-			LED_on(3);
-		}
-		else{
-			LED_off(3);
-		}
-	}
+	search2018(7, 7);
 }
 
 //バッテリ電圧をPC画面に表示
@@ -175,16 +156,15 @@ void mode7(void)
 	wait_sw_on();
 	wait_ms(1000);
 
+	turn(-90);
 	straight(70, -100, 0, 2, 0);	//ケツタッチ
-	set_wall_gain(5);
 	straight(34, 500, 0, 2, 0);
 	turn(90);
 	straight(70, -100, 0, 2, 0);	//ケツタッチ
-	straight(34, 500, 0, 2, 0);
-	turn(-90);
-
 	wait_ms(500);
 	update_center_ref();
+	straight(34, 500, 0, 2, 0);
+
 	set_wall_gain(5);
 	short acc=4;
 	straight(H_SECTION , LEFT_SPEED, LEFT_SPEED, acc, 1);
@@ -258,24 +238,75 @@ void mode10(void)
 	wait_sw_on();
 	wait_ms(1000);
 
+	turn(-90);
 	straight(70, -100, 0, 2, 0);	//ケツタッチ
-	set_wall_gain(5);
 	straight(34, 500, 0, 2, 0);
 	turn(90);
+
 	straight(70, -100, 0, 2, 0);	//ケツタッチ
-	straight(34, 500, 0, 2, 0);
-	turn(-90);
 
 	wait_ms(500);
+	update_center_ref();
+	set_wall_gain(5);
 
-	cturn(720);
+	straight(34, 500, 0, 2, 0);
+
+
+	short acc=4;
+	short speed=350;
+	short tspeed=350;
+	short pre=40;// defo 47
+	short slalen=85;// defo 73
+	straight(H_SECTION , speed, speed, acc, 1);
+
+	while(1){
+		if(wall_ls == 0){							//左壁なし
+			straight(pre, speed, tspeed, acc, 1);
+			slalom(slalen, acc, 1, 0);
+			straight(pre, speed, speed, acc, 1);
+		}
+		else if((wall_lf == 0) && (wall_rf == 0)){	//前壁なし
+			straight(SECTION, speed, speed, acc, 1);
+		}
+		else if(wall_rs == 0){						//右壁なし
+			straight(pre, speed, tspeed, acc, 1);
+			slalom(slalen, acc, -1, 0);
+			straight(pre, speed, speed, acc, 1);
+		}
+		else{										//袋小路
+			straight(H_SECTION, speed, 0, acc, 1);
+			turn(180);
+			straight(H_SECTION, speed, speed, acc, 1);
+		}
+	}
 
 }
 
 //
 void mode11(void)
 {
+	wait_sw_on();
+	wait_ms(1000);
+	straight(70, -100, 0, 2, 0);	//ケツタッチ
+	straight(34, 500, 0, 2, 0);
+	turn(-90);
+	straight(70, -100, 0, 2, 0);	//ケツタッチ
+	straight(34, 500, 0, 2, 0);
+	turn(90);
+	wait_ms(500);
 
+	update_center_ref();
+	set_wall_gain(5);
+	short acc=4;
+	straight(H_SECTION+SECTION*1-62 , 700, 700, acc, 1);
+	slalom(120,acc,-1,0);
+	straight_diag(SECTION*6 , 700, 0, acc, 1);
+	//slalom(50,acc,1,0);
+	//straight(H_SECTION , 500, 500, acc, 0);
+	//slalom(50,acc,-1,0);
+	//straight(H_SECTION , 500, 500, acc, 0);
+	//slalom(50,acc,1,0);
+	//straight(H_SECTION , 500, 0, acc, 0);
 }
 
 //
@@ -296,9 +327,29 @@ void mode14(void)
 
 }
 
-//
+//スイッチを押したらLEDが点灯する
 void mode15(void)
 {
+	while(1){
+		if(get_sw_state(DOWN)){
+			LED_on(1);
+		}
+		else{
+			LED_off(1);
+		}
+		if(get_sw_state(UP)){
+			LED_on(2);
+		}
+		else{
+			LED_off(2);
+		}
+		if(get_sw_state(EXEC)){
+			LED_on(3);
+		}
+		else{
+			LED_off(3);
+		}
+	}
 
 }
 

@@ -3,7 +3,7 @@
 
 #define MAZE_SIZE	16	//迷路区画数
 
-extern char map[MAZE_SIZE][MAZE_SIZE];
+extern unsigned char map[MAZE_SIZE][MAZE_SIZE];
 extern char mouse_x;
 extern char mouse_y;
 extern char mouse_dir;

@@ -3,6 +3,8 @@
 
 #define STRAIGHT	1
 #define TURN		2
+#define SLALOM		3
+#define STRAIGHT_DIAG 4
 
 extern char		speed_control_en;
 extern short	target_speed;

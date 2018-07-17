@@ -27,14 +27,16 @@ short	sensor_rs;		//右横センサー値
 short	sensor_rf;		//右前センサー値
 short	ref_ls;			//左横センサー基準値
 short	ref_rs;			//右横センサー基準値
+short	ref_lf;			//左前センサー基準値
+short	ref_rf;			//右前センサー基準値
 char	wall_lf;		//左前センサー壁有無
 char	wall_ls;		//左横センサー壁有無
 char	wall_rs;		//右前センサー壁有無
 char	wall_rf;		//右前センサー壁有無
-short	thre_lf = 300;	//左前センサー壁有無しきい値
-short	thre_ls = 500;	//左横センサー壁有無しきい値
-short	thre_rs = 500;	//右横センサー壁有無しきい値
-short	thre_rf = 300;	//右前センサー壁有無しきい値
+short	thre_lf = 500;	//左前センサー壁有無しきい値
+short	thre_ls = 900;	//左横センサー壁有無しきい値
+short	thre_rs = 900;	//右横センサー壁有無しきい値
+short	thre_rf = 500;	//右前センサー壁有無しきい値
 
 void init_wall_sensor(void)
 {
@@ -164,10 +166,59 @@ short get_wall_diff(void)
 	return diff;
 }
 
+//壁との差を返す（斜め用）
+//左壁に近い場合は正の値を返す
+//右壁に近い場合は負の値を返す
+//return値	壁基準値との差
+short get_wall_diff_diag(void)
+{
+	//壁制御が無効もしくは壁センサ値取得が無効の場合は0を返す
+	if(wall_control_en == 0 || wall_sensor_en == 0){return 0;}
+
+	//基準値との差を取る
+	short diff_l, diff_r;
+	diff_l = (sensor_lf - ref_lf);
+	diff_r = (sensor_rf - ref_rf);
+
+	//壁の有無情報をwall_satateに入れる
+	char wall_state = 0;
+	if(diff_l>0){
+		wall_state += 1;
+	}
+	if(diff_r>0){
+		wall_state += 2;
+	}
+
+	short diff;
+	switch(wall_state){
+	case 0://両壁なし
+		diff = 0;
+		break;
+	case 1://左壁のみ
+		diff = diff_l;
+		break;
+	case 2://右壁のみ
+		diff = -diff_r;
+		break;
+	case 3://両壁あり
+		if(diff_l > diff_r){	//壁に近い方のセンサを使う
+			diff = diff_l;
+		}
+		else{
+			diff = -1.0 * diff_r;
+		}
+		break;
+	}
+
+	return diff;
+}
+
+
+
 //マウスを区画中央に置いてあるときの左右のセンサー値(基準値)を更新する
 void update_center_ref(void)
 {
-	long ls_temp = 0, rs_temp = 0;
+	long ls_temp = 0, rs_temp = 0, lf_temp = 0, rf_temp = 0;
 	const short ave_num = 50;
 
 	wall_sensor_en = 1;
@@ -177,12 +228,16 @@ void update_center_ref(void)
 	for(short i = 0; i < ave_num; i++){
 		ls_temp += sensor_ls;
 		rs_temp += sensor_rs;
+		lf_temp += sensor_lf;
+		rf_temp += sensor_rf;
 		wait_ms(1);
 	}
 
 	//平均化
 	ref_ls = ls_temp / ave_num;
 	ref_rs = rs_temp / ave_num;
+	ref_lf = lf_temp / ave_num;
+	ref_rf = rf_temp / ave_num;
 
 	wall_sensor_en = 0;
 }

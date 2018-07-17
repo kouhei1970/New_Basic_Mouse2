@@ -6,7 +6,7 @@
 #define MAP_BLOCK	10	//データフラッシュマップ保存用ブロック(10~11)
 #define GOAL_BLOCK	12	//データフラッシュゴール座標保存用ブロック
 
-char map[MAZE_SIZE][MAZE_SIZE];	//壁情報格納配列
+unsigned char map[MAZE_SIZE][MAZE_SIZE];	//壁情報格納配列
 char mouse_x;					//マウスX座標
 char mouse_y;					//マウスY座標
 char mouse_dir;					//マウス方角

@@ -15,6 +15,8 @@ extern short	sensor_rs;
 extern short	sensor_rf;
 extern short	ref_ls;
 extern short	ref_rs;
+extern short	ref_lf;
+extern short	ref_rf;
 extern char		wall_lf;
 extern char		wall_ls;
 extern char		wall_rs;
