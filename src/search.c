@@ -38,7 +38,7 @@ void hight_map(unsigned char gx, unsigned char gy, unsigned char h,unsigned char
 	short	x,y;
 	unsigned char	wdata;
 
-    //等高線マップを最候歩数255にリセット
+    //等高線マップを最高歩数255にリセット
 	for (y=0;y<16;y++){
 		for (x=0;x<16;x++){
 			h_map[y][x] = 255;
