@@ -19,23 +19,29 @@
 #define LEFT90 (90)
 #define RIGHT90 (-90)
 
-#define SEARCH_SPEED (350)
+#define SEARCH_SPEED (580)
+#define SEARCH_TURN_SPEED (350)
 #define SEARCH_ACC (4)
-#define PRE_LENGTH (40)
-#define SLA_LENGTH (85)
+#define PRE_LENGTH (36)//34
+#define SLA_LENGTH (91)//90
 
 #define STRAIGHTRUN (0)
 #define LEFTTURN (1)
 #define RIGHTTURN (2)
 #define PIVOTTURN (3)
 
-extern unsigned char h_map[16][16];
 
-void hight_map(unsigned char gx, unsigned char gy, unsigned char h,unsigned char mode);
-void update_map(unsigned char x, unsigned char y, unsigned char dir);
-short decide_action(short mx, short my, short gx, short gy, short dir);
-void move(unsigned char action);
-void update_state(unsigned char act, unsigned char *x, unsigned char *y, unsigned char *dir);
-void search2018(unsigned char gx,unsigned char gy);
+typedef unsigned char uchar;
+
+extern uchar h_map[16][16];
+
+void search2018(uchar gx,uchar gy);
+void hight_map(uchar gx, uchar gy, uchar h,uchar mode);
+void update_map(uchar x, uchar y, uchar dir);
+short decide_action(uchar mx, uchar my, uchar gx, uchar gy, uchar dir);
+void move(uchar action);
+void smove(uchar action, short speed);
+void update_state(uchar act, uchar *x, uchar *y, uchar *dir);
+void make_mapdata(void);
 
 #endif /* SEARCH_H_ */

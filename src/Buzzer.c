@@ -75,3 +75,58 @@ void stop_buzzer(void)
 	BUZ_TIOR = 0;	//端子出力を禁止
 	buzzer_count = -1;
 }
+
+void level_up_buzzer(void)
+{
+	//ふぁふぁふぁふぁみｂそふぁ
+	wait_ms(200);
+	sound_buzzer(scale[BUZ_FA2], 100);
+	wait_ms(5);
+	sound_buzzer(scale[BUZ_FA2], 100);
+	wait_ms(5);
+	sound_buzzer(scale[BUZ_FA2], 100);
+	wait_ms(5);
+	sound_buzzer(scale[BUZ_FA2], 100);
+	wait_ms(100);
+	sound_buzzer(1224, 100);
+	wait_ms(100);
+	sound_buzzer(scale[BUZ_SO2], 100);
+	wait_ms(100);
+	sound_buzzer(scale[BUZ_FA2], 700);
+	wait_ms(200);
+}
+
+void hotel_buzzer(void){
+	//レード♯ードーシーラ レ(低い方） レー（高い方）♪ 宿屋ＢＧＭです。
+
+	wait_ms(200);
+	sound_buzzer(scale[BUZ_RE2], 100);
+	wait_ms(50);
+	sound_buzzer(1108, 100);
+	wait_ms(50);
+	sound_buzzer(scale[BUZ_DO2], 100);
+	wait_ms(50);
+	sound_buzzer(scale[BUZ_SI2], 100);
+	wait_ms(50);
+	sound_buzzer(scale[BUZ_LA2], 150);
+	wait_ms(50);
+	sound_buzzer(scale[BUZ_RE1], 150);
+	wait_ms(50);
+	sound_buzzer(scale[BUZ_RE2], 400);
+	wait_ms(200);
+
+}
+
+void church_save_buzzer(void){
+	sound_buzzer(scale[BUZ_MI2], 400);
+	wait_ms(40);
+	sound_buzzer(scale[BUZ_RE2], 200);
+	wait_ms(40);
+	sound_buzzer(scale[BUZ_DO2], 200);
+	wait_ms(40);
+	sound_buzzer(scale[BUZ_SI2], 400);
+	wait_ms(140);
+	sound_buzzer(scale[BUZ_DO2], 150);
+	wait_ms(40);
+	sound_buzzer(scale[BUZ_DO2], 600);
+}

@@ -16,28 +16,28 @@ char goal_y;					//ゴールY座標
 //壁情報をmap配列にセット
 //x		x座標
 //y		y座標
-//dir	向き 0:北 1:東 2:南 3:西
-//state	壁の有無 0:壁なし 1:壁あり
+//dir	向き 　0:北 1:東 2:南 3:西
+//state	壁の有無　 0:壁なし　 1以上:壁あり
 void set_map(char x, char y, char dir, char state)
 {
 	if(x < 0 || y < 0 || x >= MAZE_SIZE || y >= MAZE_SIZE || dir < 0 || dir > 3){
 		return;
 	}
 
-	if(state == 1){
+	if(state){
 		switch(dir){
-		case 0:map[x][y]|=0x11;	if(y<MAZE_SIZE-1){map[x][y+1]|=0x44;}break;
-		case 1:map[x][y]|=0x22;	if(x<MAZE_SIZE-1){map[x+1][y]|=0x88;}break;
-		case 2:map[x][y]|=0x44;	if(y>0)			 {map[x][y-1]|=0x11;}break;
-		case 3:map[x][y]|=0x88;	if(x>0)			 {map[x-1][y]|=0x22;}break;
+		case 0:map[y][x]|=0x11;	if(y<MAZE_SIZE-1){map[y+1][x]|=0x44;}break;
+		case 1:map[y][x]|=0x22;	if(x<MAZE_SIZE-1){map[y][x+1]|=0x88;}break;
+		case 2:map[y][x]|=0x44;	if(y>0)			 {map[y-1][x]|=0x11;}break;
+		case 3:map[y][x]|=0x88;	if(x>0)			 {map[y][x-1]|=0x22;}break;
 		}
 	}
 	else if(state == 0){
 		switch(dir){
-		case 0:map[x][y]|=0x10;map[x][y]&=0xfe;	if(y<MAZE_SIZE-1){map[x][y+1]|=0x40;map[x][y+1]&=0xfb;}break;
-		case 1:map[x][y]|=0x20;map[x][y]&=0xfd;	if(x<MAZE_SIZE-1){map[x+1][y]|=0x80;map[x+1][y]&=0xf7;}break;
-		case 2:map[x][y]|=0x40;map[x][y]&=0xfb;	if(y>0)			 {map[x][y-1]|=0x10;map[x][y-1]&=0xfe;}break;
-		case 3:map[x][y]|=0x80;map[x][y]&=0xf7;	if(x>0)			 {map[x-1][y]|=0x20;map[x-1][y]&=0xfd;}break;
+		case 0:map[y][x]|=0x10;map[y][x]&=0xfe;	if(y<MAZE_SIZE-1){map[y+1][x]|=0x40;map[y+1][x]&=0xfb;}break;
+		case 1:map[y][x]|=0x20;map[y][x]&=0xfd;	if(x<MAZE_SIZE-1){map[y][x+1]|=0x80;map[y][x+1]&=0xf7;}break;
+		case 2:map[y][x]|=0x40;map[y][x]&=0xfb;	if(y>0)			 {map[y-1][x]|=0x10;map[y-1][x]&=0xfe;}break;
+		case 3:map[y][x]|=0x80;map[y][x]&=0xf7;	if(x>0)			 {map[y][x-1]|=0x20;map[y][x-1]&=0xfd;}break;
 		}
 	}
 }
@@ -54,11 +54,11 @@ char get_map(char x, char y, char dir)
 	}
 
 	//未探索
-	if(((map[x][y] >> dir)&0x10) == 0){
+	if(((map[y][x] >> dir)&0x10) == 0){
 		return 2;
 	}
 	else{
-		return ((map[x][y] >> dir)&0x01);
+		return ((map[y][x] >> dir)&0x01);
 	}
 }
 
@@ -66,19 +66,19 @@ char get_map(char x, char y, char dir)
 //迷路外周とスタート区画の壁情報は既知なので同時にセットする
 void reset_map(void)
 {
-	mouse_x = 0;
-	mouse_y = 0;
-	mouse_dir = 0;
+	//mouse_x = 0;
+	//mouse_y = 0;
+	//mouse_dir = 0;
 
-	for(short x = 0; x < MAZE_SIZE; x++){
-		for(short y = 0; y < MAZE_SIZE; y++){
-			map[x][y] = 0x00;
-			if((x == 0)&&(y == 0))	map[x][y]  = 0xfe;
-			if((x == 0)&&(y == 1))	map[x][y]  = 0xcc;
-			if(y == (MAZE_SIZE-1))	map[x][y] |= 0x11;
-			if(x == (MAZE_SIZE-1))	map[x][y] |= 0x22;
-			if(y == 0)				map[x][y] |= 0x44;
-			if(x == 0)				map[x][y] |= 0x88;
+	for(short y = 0; y < MAZE_SIZE; y++){
+		for(short x = 0; x < MAZE_SIZE; x++){
+			map[y][x] = 0x00;
+			if((x == 0)&&(y == 0))	map[y][x]  = 0xfe;
+			if((x == 0)&&(y == 1))	map[y][x]  = 0xc8;
+			if(y == (MAZE_SIZE-1))	map[y][x] |= 0x11;
+			if(x == (MAZE_SIZE-1))	map[y][x] |= 0x22;
+			if(y == 0)				map[y][x] |= 0x44;
+			if(x == 0)				map[y][x] |= 0x88;
 		}
 	}
 }
@@ -123,7 +123,7 @@ char check_searched(char x, char y)
 	if(x < 0 || y < 0 || x >= MAZE_SIZE || y >= MAZE_SIZE){
 		return -1;
 	}
-	return ((map[x][y]&0xf0) == 0xf0);
+	return ((map[y][x]&0xf0) == 0xf0);
 }
 
 //map情報をデータフラッシュに保存
@@ -133,9 +133,9 @@ void save_map(void)
 	char i = 0, b = 0;
 	unsigned short save[64];
 
-	for(short x = 0; x < MAZE_SIZE; x++){
-		for(short y = 0; y < MAZE_SIZE; y += 2){
-			save[i] = ((map[x][y] << 8)&0xff00) | (map[x][y+1]&0x00ff);
+	for(short y = 0; y < MAZE_SIZE; y++){
+		for(short x = 0; x < MAZE_SIZE; x += 2){
+			save[i] = ((map[y][x] << 8)&0xff00) | (map[y][x+1]&0x00ff);
 			if(++i >= 64){
 				fld_program(MAP_BLOCK + b, 64, save);
 				b++;
@@ -155,10 +155,10 @@ void load_map(void)
 	unsigned short* load;
 
 	load = fld_read(MAP_BLOCK);
-	for(short x = 0; x < MAZE_SIZE; x++){
-		for(short y = 0; y < MAZE_SIZE; y += 2){
-			map[x][y]   = (load[i] >> 8)&0xff;
-			map[x][y+1] = (load[i])&0xff;
+	for(short y = 0; y < MAZE_SIZE; y++){
+		for(short x = 0; x < MAZE_SIZE; x += 2){
+			map[y][x]   = (load[i] >> 8)&0xff;
+			map[y][x+1] = (load[i])&0xff;
 			if(++i >= 64){
 				b++;
 				i = 0;

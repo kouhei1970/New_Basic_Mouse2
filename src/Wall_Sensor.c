@@ -29,14 +29,14 @@ short	ref_ls;			//左横センサー基準値
 short	ref_rs;			//右横センサー基準値
 short	ref_lf;			//左前センサー基準値
 short	ref_rf;			//右前センサー基準値
-char	wall_lf;		//左前センサー壁有無
-char	wall_ls;		//左横センサー壁有無
-char	wall_rs;		//右前センサー壁有無
-char	wall_rf;		//右前センサー壁有無
-short	thre_lf = 500;	//左前センサー壁有無しきい値
+volatile char	wall_lf;		//左前センサー壁有無
+volatile char	wall_ls;		//左横センサー壁有無
+volatile char	wall_rs;		//右横センサー壁有無
+volatile char	wall_rf;		//右前センサー壁有無
+short	thre_lf = 400;	//左前センサー壁有無しきい値
 short	thre_ls = 900;	//左横センサー壁有無しきい値
 short	thre_rs = 900;	//右横センサー壁有無しきい値
-short	thre_rf = 500;	//右前センサー壁有無しきい値
+short	thre_rf = 400;	//右前センサー壁有無しきい値
 
 void init_wall_sensor(void)
 {

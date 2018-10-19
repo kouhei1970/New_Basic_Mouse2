@@ -59,40 +59,31 @@ void main(void)
 //タクトスイッチを押したらLED点灯
 void mode0(void)
 {
-	search2018(7, 7);
+	//地図の初期化
+	reset_map();
+
+	search2018(GOALX, GOALY);
+	wait_ms(1000);
+	LED_stream();
 }
 
 //バッテリ電圧をPC画面に表示
 void mode1(void)
 {
-	while(1){
-		xprintf("battery:%5d[mV]\n", battery_vol);
-		wait_ms(100);
-	}
+	//地図の初期化
+	reset_map();
+	load_map();
+	search2018(GOALX, GOALY);
+	wait_ms(1000);
+	LED_stream();
+
 }
 
-//ブザーを鳴らす
+//
 void mode2(void)
 {
-	while(1){
-		sound_buzzer(scale[BUZ_LA0], 500);
-		sound_buzzer(scale[BUZ_SI0], 500);
-		sound_buzzer(scale[BUZ_DO1], 500);
-		sound_buzzer(scale[BUZ_RE1], 500);
-		sound_buzzer(scale[BUZ_MI1], 500);
-		sound_buzzer(scale[BUZ_FA1], 500);
-		sound_buzzer(scale[BUZ_SO1], 500);
-		sound_buzzer(scale[BUZ_LA1], 500);
-		sound_buzzer(scale[BUZ_SI1], 500);
-		sound_buzzer(scale[BUZ_DO2], 500);
-		sound_buzzer(scale[BUZ_RE2], 500);
-		sound_buzzer(scale[BUZ_MI2], 500);
-		sound_buzzer(scale[BUZ_FA2], 500);
-		sound_buzzer(scale[BUZ_SO2], 500);
-		sound_buzzer(scale[BUZ_LA2], 500);
-		sound_buzzer(scale[BUZ_SI2], 500);
-		sound_buzzer(scale[BUZ_DO3], 500);
-	}
+	load_map();
+	church_save_buzzer();
 }
 
 //壁センサーをPC画面に表示
@@ -150,7 +141,7 @@ void mode6(void)
 	LED_off(4);
 }
 
-//左手法
+//左手法(極地旋回)
 void mode7(void)
 {
 	wait_sw_on();
@@ -191,49 +182,8 @@ void mode7(void)
 	}
 }
 
-//mapデータの保存
+//左手法（スラローム）
 void mode8(void)
-{
-	reset_map();
-
-	//各区画の東側の壁だけセットする
-	for(short x = 0; x < MAZE_SIZE; x++){
-		for(short y = 0; y < MAZE_SIZE; y++){
-			set_map(x, y, 1, 1);
-		}
-	}
-
-	output_map();	//map配列をPCに出力
-	save_map();		//map配列をデータフラッシュに保存
-	reset_map();	//map配列をリセット
-	load_map();		//データフラッシュからmap配列にデータをロード
-	output_map();	//map配列をPCに出力
-}
-
-//ログ取り
-void mode9(void)
-{
-	set_log_var(sensor_ls, short, 0);
-	set_log_var(sensor_rs, short, 1);
-	set_log_var(now_speed, short, 2);
-
-	turn_on_motor();
-	wait_sw_on();
-	wait_ms(1000);
-	update_center_ref();
-	set_wall_gain(5);
-
-	LED_on(4);
-	//start_ring_log();
-	start_log();
-	straight(SECTION*2, LEFT_SPEED, 0, 4, 1);
-	LED_off(4);
-
-	output_log();
-}
-
-//
-void mode10(void)
 {
 	wait_sw_on();
 	wait_ms(1000);
@@ -282,43 +232,97 @@ void mode10(void)
 
 }
 
-//
-void mode11(void)
+
+//mapデータの保存
+void mode9(void)
 {
+	reset_map();
+
+	//各区画の東側の壁だけセットする
+	for(short x = 0; x < MAZE_SIZE; x++){
+		for(short y = 0; y < MAZE_SIZE; y++){
+			set_map(x, y, 1, 1);
+		}
+	}
+
+	output_map();	//map配列をPCに出力
+	save_map();		//map配列をデータフラッシュに保存
+	reset_map();	//map配列をリセット
+	load_map();		//データフラッシュからmap配列にデータをロード
+	output_map();	//map配列をPCに出力
+}
+
+//ログ取り
+void mode10(void)
+{
+	set_log_var(sensor_ls, short, 0);
+	set_log_var(sensor_rs, short, 1);
+	set_log_var(now_speed, short, 2);
+
+	turn_on_motor();
 	wait_sw_on();
 	wait_ms(1000);
-	straight(70, -100, 0, 2, 0);	//ケツタッチ
-	straight(34, 500, 0, 2, 0);
-	turn(-90);
-	straight(70, -100, 0, 2, 0);	//ケツタッチ
-	straight(34, 500, 0, 2, 0);
-	turn(90);
-	wait_ms(500);
-
 	update_center_ref();
 	set_wall_gain(5);
-	short acc=4;
-	straight(H_SECTION+SECTION*1-62 , 700, 700, acc, 1);
-	slalom(120,acc,-1,0);
-	straight_diag(SECTION*6 , 700, 0, acc, 1);
-	//slalom(50,acc,1,0);
-	//straight(H_SECTION , 500, 500, acc, 0);
-	//slalom(50,acc,-1,0);
-	//straight(H_SECTION , 500, 500, acc, 0);
-	//slalom(50,acc,1,0);
-	//straight(H_SECTION , 500, 0, acc, 0);
+
+	LED_on(4);
+	//start_ring_log();
+	start_log();
+	straight(SECTION*2, LEFT_SPEED, 0, 4, 1);
+	LED_off(4);
+
+	output_log();
+}
+
+
+
+//バッテリ電圧をPC画面に表示
+void mode11(void)
+{
+	while(1){
+		xprintf("battery:%5d[mV]\n", battery_vol);
+		wait_ms(100);
+	}
 }
 
 //
 void mode12(void)
 {
-
+	output_map();
 }
 
-//
+//ブザーを鳴らす
 void mode13(void)
 {
+	while(1){
 
+		wait_ms(1000);
+		church_save_buzzer();
+		wait_ms(1000);
+		hotel_buzzer();
+		wait_ms(1000);
+		level_up_buzzer();
+
+		/*
+		sound_buzzer(scale[BUZ_LA0], 500);
+		sound_buzzer(scale[BUZ_SI0], 500);
+		sound_buzzer(scale[BUZ_DO1], 500);
+		sound_buzzer(scale[BUZ_RE1], 500);
+		sound_buzzer(scale[BUZ_MI1], 500);
+		sound_buzzer(scale[BUZ_FA1], 500);
+		sound_buzzer(scale[BUZ_SO1], 500);
+		sound_buzzer(scale[BUZ_LA1], 500);
+		sound_buzzer(scale[BUZ_SI1], 500);
+		sound_buzzer(scale[BUZ_DO2], 500);
+		sound_buzzer(scale[BUZ_RE2], 500);
+		sound_buzzer(scale[BUZ_MI2], 500);
+		sound_buzzer(scale[BUZ_FA2], 500);
+		sound_buzzer(scale[BUZ_SO2], 500);
+		sound_buzzer(scale[BUZ_LA2], 500);
+		sound_buzzer(scale[BUZ_SI2], 500);
+		sound_buzzer(scale[BUZ_DO3], 500);
+		*/
+	}
 }
 
 //

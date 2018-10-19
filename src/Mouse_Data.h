@@ -27,5 +27,8 @@
 //迷路半区画の距離[mm]
 #define H_SECTION		(SECTION/2)
 
+#define GOALX (6)
+#define GOALY (10)
+
 
 #endif /* MOUSE_DATA_H_ */
