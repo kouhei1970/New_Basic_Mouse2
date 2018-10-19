@@ -1,4 +1,4 @@
-Renesas Optimizing Linker (W2.08.00 )             22-Jun-2018 17:39:22
+Renesas Optimizing Linker (W2.08.00 )             18-Oct-2018 20:15:19
 
 *** Options ***
 
@@ -26,6 +26,7 @@ Renesas Optimizing Linker (W2.08.00 )             22-Jun-2018 17:39:22
 -input=".\src\interrupt_handlers.obj"
 -input=".\src\reset_program.obj"
 -input=".\src\sbrk.obj"
+-input=".\src\search.obj"
 -input=".\src\vector_table.obj"
 -input=".\src\xprintf.obj"
 -library=".\New_Basic_Mouse2.lib"
@@ -48,17 +49,17 @@ SU
 SI
                                   00000104  00000403       300   4
 B_1
-                                  00000404  00000511       10e   1
+                                  00000404  00000611       20e   1
 R_1
-                                  00000512  00000517         6   1
+                                  00000612  00000617         6   1
 B_2
-                                  00000518  00000539        22   2
+                                  00000618  0000063d        26   2
 R_2
-                                  0000053a  00000545         c   2
+                                  0000063e  00000649         c   2
 B
-                                  00000548  00003853      330c   4
+                                  0000064c  00003957      330c   4
 R
-                                  00003854  00003857         4   4
+                                  00003958  0000395b         4   4
 PResetPRG
                                   fffc0000  fffc002d        2e   1
 C_1
@@ -90,10 +91,10 @@ W_1
 W_2
                                   fffc04e8  fffc04e8         0   2
 L
-                                  fffc04e8  fffc05e9       102   4
+                                  fffc04e8  fffc0e6d       986   4
 PIntPRG
-                                  fffc05ea  fffc070a       121   1
+                                  fffc0e6e  fffc0f8e       121   1
 P
-                                  fffc070b  fffc2d88      267e   1
+                                  fffc0f8f  fffc43fd      346f   1
 FIXEDVECT
                                   ffffff80  ffffffff        80   4

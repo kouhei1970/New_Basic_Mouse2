@@ -26,6 +26,7 @@ C_SRCS += \
 ../src/interrupt_handlers.c \
 ../src/reset_program.c \
 ../src/sbrk.c \
+../src/search.c \
 ../src/vector_table.c \
 ../src/xprintf.c 
 
@@ -52,6 +53,7 @@ src/hardware_setup.obj \
 src/interrupt_handlers.obj \
 src/reset_program.obj \
 src/sbrk.obj \
+src/search.obj \
 src/vector_table.obj \
 src/xprintf.obj 
 
@@ -78,6 +80,7 @@ src/hardware_setup.d \
 src/interrupt_handlers.d \
 src/reset_program.d \
 src/sbrk.d \
+src/search.d \
 src/vector_table.d \
 src/xprintf.d 
 

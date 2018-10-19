@@ -39,3 +39,5 @@ src/New_Basic_Mouse2.obj src/New_Basic_Mouse2.d: ../src/Run.h
 ../src/Run.h:
 src/New_Basic_Mouse2.obj src/New_Basic_Mouse2.d: ../src/Log.h
 ../src/Log.h:
+src/New_Basic_Mouse2.obj src/New_Basic_Mouse2.d: ../src/search.h
+../src/search.h:
