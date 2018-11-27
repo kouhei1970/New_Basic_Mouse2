@@ -1,368 +1,197 @@
-//-------------------------------------------------------------------------
-//	íTçıä÷êî
-//-------------------------------------------------------------------------
-void mouse_search( uchar y, uchar x, int spd )
-{
-  //íTçıÇ™èIÇÌÇÈèåè
-  //1. ÉSÅ[ÉãÇµÇΩéûÇ…ÇSï™à»è„åoâﬂÇµÇƒÇ¢ÇΩèÍçá
-  //2. àÍìxÉSÅ[ÉãÇµÇƒÇ¢ÇƒÉXÉ^Å[ÉgÇ…ñﬂÇ¡ÇΩéû
-  //å≥ÉvÉçÉOÉâÉÄÇÕÅAëIëÇ≈Ç´Ç‹ÇµÇΩÇ™å¥ë•ÉXÉâíTÇ…ÇµÇ‹Ç∑ÅB
-  
-  uchar wall_data,vec,i,r_flag,l_flag,s_flag,tmp;
+#include "search.h"
+#include "Run.h"
+#include "Map.h"
+#include "Mouse_Data.h"
+#include "Wall_Sensor.h"
+#include "iodefine.h"
+#include "Clock.h"
+#include "UI.h"
+#include "Wait.h"
+#include "SCI.h"
+#include "xprintf.h"
+#include "ADC.h"
+#include "Interrupt.h"
+#include "Motor.h"
+#include "Wall_Sensor.h"
+#include "Buzzer.h"
+#include "Battery.h"
+#include "My_Func.h"
+#include "E2Flash_RX220.h"
+#include "Map.h"
+#include "Control.h"
+#include "Run.h"
+#include "Log.h"
 
-  recovery();   //ÇØÇ¬Ç©Ç¡ÇøÇÒ
-  mode6(1);     //Sensor Check
-  run_flag=1;
-  control_mode=1;
-  goal_flag = 0;
-  sura_flag=0;
+unsigned char h_map[16][16];
 
-  while( 1 ){
-    // ÇPÇ¬ÇÃÉãÅ[ÉvÇÕãÊä‘íÜêSÇ©ÇÁéüÇÃãÊä‘íÜêSÇ‹Ç≈
-    // ç≈èâÇ…îºãÊâÊíºêi
 
-    rdir = 0; ldir = 0;           // âÒì]ï˚å¸Çíºêi
-    STEP = 0;                     // ãóó£ÉJÉEÉìÉ^ÉäÉZÉbÉg
-    speed = spd;                  // ë¨ìxê›íË(Ç±ÇÍÇ≈é©ìÆìIÇ…É}ÉEÉXÇ™à⁄ìÆäJén)
-    control_mode = 1;             // épê®êßå‰ON
+void search2018(unsigned char gx,unsigned char gy){
 
-    if(sura_flag!=1){
-      while( STEP < GO_STEP / 2 )
-      if(SW_EXEC==SW_ON)return;
-    }  // îºãÊä‘êiÇﬁ
-    else STEP = GO_STEP/2;//ÉXÉâÉçÅ[ÉÄÉtÉâÉOÇÕ
+    uchar first_f = 1;      //„Çπ„Çø„Éº„Éà„Åô„ÇãÂâç„ÅãÔºüÂàùÊúüÂÄ§ Ôºë
+    uchar goal_f  = 0;      //„Ç¥„Éº„É´„Åó„Åü„Åã„Åó„Å¶„Å™„ÅÑ„ÅãÔºüÂàùÊúüÂÄ§ 0
+    uchar search_end_f = 0; //Êé¢Á¥¢ÁµÇ‰∫Ü„ÅãÔºüÂàùÊúüÂÄ§ 0
+    uchar mx,my;
+    uchar goalx;
+    uchar goaly ;
+    unsigned char dir = NORTH;
+    short speed = SEARCH_SPEED;
+    short acc = SEARCH_ACC;
 
-    place_update();               // åªç›ç¿ïWçXêV
-    // íåÇ‹Ç≈êiÇÒÇæÇÁ
-    wall_data = get_wall_data();  // ï«èÓïÒéÊìæ
+    while(!search_end_f){
+        if (first_f == 1){//„Çπ„Çø„Éº„ÉàÂá¶ÁêÜ
 
-    if(map[my][mx]<0xf0)          // É}ÉbÉsÉìÉOÇµÇƒÇ¢Ç»Ç¢ãÊâÊÇ»ÇÁ
-      map_save(wall_data);        // É}ÉbÉvÇçXêV
-    
-    LED_wall(wall_data);
-    wall_data|=symu_wall();
+            goalx=gx;
+            goaly=gy;
+            //Âú∞Âõ≥„ÅÆÂàùÊúüÂåñ
+            //reset_map();
+            //Â∫ßÊ®ôÁ≠â„ÅÆÂàùÊúüÂåñ
+            mx=0;
+            my=1;
+            wait_sw_on();
+            wait_ms(1000);
 
-    sura_flag=0;
 
-    if(mx==x&&my==y&&goal_flag==0)                          //èâÇﬂÇƒÉSÅ[ÉãÇµÇΩ
-    {
-      while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-      speed=1;
-      while( STEP < GO_STEP )if(SW_EXEC==SW_ON)return;
-      goal_flag=1;
-      com_turn(2);
-      countdown();
-      if(over_flag==1){
-        com_stop();
-        hight_map(0,0,0,T_MODE);
-        most_short(y,x,spd);
-        control_mode=1;
-        return;
-      }
-    }
-    else if(mx==0&&my==0)                                   //ÉXÉ^Å[ÉgÇ…Ç¢ÇÈ
-    {
-      if(goal_flag==1)
-      {
-        while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-        speed = 1;
-        while( STEP < GO_STEP )if(SW_EXEC==SW_ON)return;
-        com_turn( 2 );
-        goal_flag=0;
-        run_flag=0;
-        countdown();
-        return;
-      }
-      else
-      {
-        while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-        speed = 1;
-        while(STEP<GO_STEP);
-        com_turn(2);
-        map_initialize();
-        countdown();
-      }
-    }
-    else if(over_flag==1 && goal_flag ==1){                 //àÍìxÇÕÉSÅ[ÉãÇµéûä‘ÉIÅ[ÉoÅ[
-      while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-      speed =1;
-      while(STEP<GO_STEP);
-      com_stop();
-      control_mode=1;
-      hight_map(0,0,0,T_MODE);
-      wall_data=map_load();
-      if(wall_data!=3)com_turn(wall_data);
-      most_short(0,0,spd);
-      countdown();
-      return;
-    }
-    
-    else if(spd>=200){                                      //ÉXÉsÅ[ÉhÇ™200à»è„Å@ÉXÉâÉçÅ[ÉÄíTçı
-      r_flag=l_flag=s_flag=0;
-      if((wall_data&0x08)==0x00)     // ç∂Ç…ï«Ç™Ç»Ç©Ç¡ÇΩÇÁ
-        l_flag=1;//com_sura(1);
-      if((wall_data&0x01)==0x00) // ëOÇ…ï«Ç™Ç»Ç©Ç¡ÇΩÇÁ
-        s_flag=1;//while( STEP < GO_STEP );      // Ç≥ÇÁÇ…îºãÊä‘êiÇﬁ
-      if((wall_data&0x02)==0x00)// âEÇ…ï«Ç™Ç»Ç©Ç¡ÇΩÇÁ
-        r_flag=1;//com_sura(0);
 
-      if(l_flag==0&&r_flag==0&&s_flag==0){
-        vec=vector();
-        if(vec==2)
-        {
-          while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-          speed = 1;                    // écÇËîºãÊä‘Çå∏ë¨ÇµÇ»Ç™ÇÁíºêi
-          while( STEP < GO_STEP );      // Ç≥ÇÁÇ…îºãÊä‘êiÇﬁ
-          com_turn( vec );
+            //Ëá™ÂãïÁöÑ„Å´„Ç≥„Éº„Çπ„ÅÆÁúü„Çì‰∏≠„Å´„Çª„ÉÉ„Éà„Åó„Çª„É≥„Çµ„Éº„Ç≠„É£„É™„Éñ„É¨„Éº„Ç∑„Éß„É≥
+            turn(RIGHT90);                  //Âè≥Âêë„ÅçÂè≥90Â∫¶
+            straight(70, -100, 0, 2, 0);	//ÂæåÈÄÄ„Ç±„ÉÑ„Çø„ÉÉ„ÉÅ
+            straight(34, 500, 0, 2, 0);     //Áúü„Çì‰∏≠„Å´ÂâçÈÄ≤
+            turn(LEFT90);                   //ÂâçÂêë„Åç„Å™„Åä„ÇäÂ∑¶90Â∫¶
+            straight(70, -100, 0, 2, 0);    //ÂæåÈÄÄ„Ç±„ÉÑ„Çø„ÉÉ„ÉÅ
+            wait_ms(500);
+            update_center_ref();            //„Çª„É≥„Çµ„Éº„Ç≠„É£„É™„Éñ„É¨„Éº„Ç∑„Éß„É≥
+
+
+
+            set_wall_gain(5);//5            //Âà∂Âæ°„Ç≤„Ç§„É≥Ë®≠ÂÆö
+
+            //„Éû„Ç¶„ÇπÂá∫Áô∫
+            hotel_buzzer();
+
+            straight(H_SECTION + 34, speed, speed, acc, 1);  //124mmÂâçÈÄ≤ „Çπ„Çø„Éº„Éà
+            first_f = 0;//„Éï„É©„Ç∞„É™„Çª„ÉÉ„ÉàÔºà„Çπ„Çø„Éº„ÉàÁµÇ„Çè„ÇäÔºâ
         }
-        else if(vec<2)
-          com_sura(vec); 
-        else
-          while(STEP<GO_STEP);
-      }
-      
-      else if(r_flag&&l_flag&&s_flag){
-        tmp=wait_timer%3;
-        if(tmp==0)com_sura(0);
-        else if(tmp==1)com_sura(1);
-        else {while( STEP < GO_STEP );}
-      }
-      else if(l_flag&&s_flag){
-        tmp=wait_timer%2;
-        if(tmp==0)com_sura(1);
-        else {while( STEP < GO_STEP );}
-      }
-      else if(r_flag&&s_flag){
-        tmp=wait_timer%2;
-        if(tmp==0)com_sura(0);
-        else {while( STEP < GO_STEP );}
-      }
-      else if(r_flag&&l_flag){
-        tmp=wait_timer%2;
-        if(tmp==0)com_sura(0);
-        else if(tmp==1)com_sura(1);
-      }
-      else if(l_flag){
-        com_sura(1);
-      }
-      else if(r_flag){
-        com_sura(0);
-      }
-      else {while( STEP < GO_STEP );}
-      
-      
-    }
-    
-/*
-    else if(spd>=200){
-      if((wall_data&0x08)==0x00)     // ç∂Ç…ï«Ç™Ç»Ç©Ç¡ÇΩÇÁ
-        com_sura(1);
-      else if((wall_data&0x01)==0x00) // ëOÇ…ï«Ç™Ç»Ç©Ç¡ÇΩÇÁ
-        while( STEP < GO_STEP );      // Ç≥ÇÁÇ…îºãÊä‘êiÇﬁ
-      else if((wall_data&0x02)==0x00)// âEÇ…ï«Ç™Ç»Ç©Ç¡ÇΩÇÁ
-        com_sura(0);
-      else{
-        vec=vector();
-        if(vec==2)
-        {
-          while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-          speed = 1;                    // écÇËîºãÊä‘Çå∏ë¨ÇµÇ»Ç™ÇÁíºêi
-          while( STEP < GO_STEP );      // Ç≥ÇÁÇ…îºãÊä‘êiÇﬁ
-          com_turn( vec );
-        }
-        else if(vec<2)
-          com_sura(vec); 
-        else
-          while(STEP<GO_STEP);
-      }
-    }
-*/
-    
-    else{                                                                   //ã…ínê˘âÒÉÇÅ[ÉhÇ≈íTçı
-      if((wall_data&0x08)==0x00){     // ç∂Ç…ï«Ç™Ç»Ç©Ç¡ÇΩÇÁ
-        while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-        speed = 1;                    // écÇËîºãÊä‘Çå∏ë¨ÇµÇ»Ç™ÇÁíºêi
-        while( STEP < GO_STEP )if(SW_EXEC==SW_ON)return;      // Ç≥ÇÁÇ…îºãÊä‘êiÇﬁ
-        com_turn( 1 );                // ç∂90ìxê˘âÒ
-      }
-      else if((wall_data&0x01)==0x00) // ëOÇ…ï«Ç™Ç»Ç©Ç¡ÇΩÇÁ
-        while( STEP < GO_STEP );      // Ç≥ÇÁÇ…îºãÊä‘êiÇﬁ
-      else if((wall_data&0x02)==0x00){// âEÇ…ï«Ç™Ç»Ç©Ç¡ÇΩÇÁ
-        while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-        speed = 1;                    // écÇËîºãÊä‘Çå∏ë¨ÇµÇ»Ç™ÇÁíºêi
-        while( STEP < GO_STEP );      // Ç≥ÇÁÇ…îºãÊä‘êiÇﬁ
-        com_turn( 0 );                // âE90ìxê˘âÒ
-      }
-      else{
-        vec=vector();
-        if(vec<=2)
-        {
-          while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-          speed = 1;                    // écÇËîºãÊä‘Çå∏ë¨ÇµÇ»Ç™ÇÁíºêi
-          while( STEP < GO_STEP );      // Ç≥ÇÁÇ…îºãÊä‘êiÇﬁ
-          com_turn( vec );
-        }
-        else
-          while(STEP<GO_STEP);
-      }
-    }
-  }
-}
 
+        else if (goalx==mx && goaly==my){//„Ç¥„Éº„É´„Åæ„Åü„ÅØ„Çπ„Çø„Éº„Éà„Å´ÂÖ•„Å£„ÅüÊôÇ„ÅÆÂá¶ÁêÜ
+            update_map(mx, my, dir);                                    //ÔºàÔºëÔºâÂå∫Áîª„ÅÆÂ¢ÉÁõÆ„ÅßÂ£Å„ÅÆÊÉÖÂ†±„ÇíÊõ¥Êñ∞
+            LED_on(1);LED_on(2);LED_on(3);LED_on(4);
+            straight(H_SECTION, speed, 0, acc, 1);//ÂçäÊ≠©ÂâçÈÄ≤
+            goal_f = 1;
 
-//------------------------------------------------------------------------
-//ç≈íZ
-//------------------------------------------------------------------------
-void most_short(char y,char x,int spd)
-{
-	uchar course;
-	LED_num(spd/50);
-	pause(500);
-	control_mode=1;
-	if(over_flag!=1){
-	  hight_map_initalize();
-	  hight_map(y,x,0,T_MODE);
+            if(goalx==0&&goaly==0){//„Çπ„Çø„Éº„ÉàÂå∫ÁîªÂá¶ÁêÜ
+                goalx=gx;
+                goaly=gy;
+                save_map();             //map seved
+                church_save_buzzer();   //save sound
+                //Âêë„Åç„ÇíÂ§â„Åà„Å¶ÂÜçÂá∫Áô∫
+                update_state(PIVOTTURN, &mx, &my, &dir);
+                turn(LEFT90);
+
+				//Ëá™ÂãïÁöÑ„Å´„Ç≥„Éº„Çπ„ÅÆÁúü„Çì‰∏≠„Å´„Çª„ÉÉ„Éà„Åó„Çª„É≥„Çµ„Éº„Ç≠„É£„É™„Éñ„É¨„Éº„Ç∑„Éß„É≥
+				//turn(RIGHT90);                  //Âè≥Âêë„ÅçÂè≥90Â∫¶
+				straight(70, -100, 0, 2, 0);	//ÂæåÈÄÄ„Ç±„ÉÑ„Çø„ÉÉ„ÉÅ
+				straight(34, 500, 0, 2, 0);     //Áúü„Çì‰∏≠„Å´ÂâçÈÄ≤
+				turn(LEFT90);                   //ÂâçÂêë„Åç„Å™„Åä„ÇäÂ∑¶90Â∫¶
+				straight(70, -100, 0, 2, 0);	//ÂæåÈÄÄ„Ç±„ÉÑ„Çø„ÉÉ„ÉÅ
+				wait_ms(500);
+				update_center_ref();            //„Çª„É≥„Çµ„Éº„Ç≠„É£„É™„Éñ„É¨„Éº„Ç∑„Éß„É≥
+                // Restart !
+				straight(H_SECTION + 34, speed, speed, acc, 1);  //124mmÂâçÈÄ≤ „Çπ„Çø„Éº„Éà
+			}
+
+			else {//„Ç¥„Éº„É´Âå∫ÁîªÂá¶ÁêÜ
+				level_up_buzzer();//„Ç¥„Éº„É´„Éï„Ç°„É≥„Éï„Ç°„Éº„É¨
+				goalx=0;
+				goaly=0;
+				save_map();
+				church_save_buzzer();
+
+				//Âêë„Åç„ÇíÂ§â„Åà„Å¶ÂÜçÂá∫Áô∫
+				update_state(PIVOTTURN, &mx, &my, &dir);
+				turn(180);
+				straight(H_SECTION, speed, speed, acc, 1);
+
+			}//„Çπ„Çø„Éº„Éà„ÇíÁõÆÊåá„Åô
+			//search_end_f = 1;
+		}
+
+		else if (first_f==0 && mx==0 && my==0){//„Çπ„Çø„Éº„Éà„Å´Êàª„Å£„ÅüÊôÇ„ÅÆÂá¶ÁêÜ
+			//LED_on(1);LED_on(2);LED_on(3);LED_on(4);
+			//straight(H_SECTION, speed, 0, acc, 1);//ÂçäÊ≠©ÂâçÈÄ≤
+			//level_up_buzzer();//„Ç¥„Éº„É´„Éï„Ç°„É≥„Éï„Ç°„Éº„É¨
+			//goal_f = 1;
+			//gx=0;gy=0;//„Çπ„Çø„Éº„Éà„ÇíÁõÆÊåá„Åô
+			//search_end_f = 1;
+		}
+
+		else {//ÊôÆÈÄö„ÅÆÊé¢Á¥¢
+			update_map(mx, my, dir);                                            //ÔºàÔºëÔºâÂå∫Áîª„ÅÆÂ¢ÉÁõÆ„ÅßÂ£Å„ÅÆÊÉÖÂ†±„ÇíÊõ¥Êñ∞
+			uchar action = decide_action(mx, my, goalx, goaly, dir, S_MODE);    //ÔºàÔºíÔºâÂ£Å„ÅÆÊÉÖÂ†±„Å´Âü∫„Å•„ÅçÁßªÂãïÊñπÂêë„ÇíÊ±∫ÂÆö
+			move(action);                                                       //ÔºàÔºìÔºâÊ±∫ÂÆö„Åó„ÅüË°åÂãï„ÇíÂÆüË°å„Åô„Çã
+			update_state(action, &mx ,&my, &dir);                               //ÔºàÔºîÔºâÂ∫ßÊ®ô„ÄÅÊñπÂêë„ÅÆÁä∂ÊÖãÂ§âÊï∞„ÇíÊõ¥Êñ∞„Åô„Çã
+		}
 	}
-	else
-	  over_flag=0;
-	 
-	 while( 1 ){
-    // ÇPÇ¬ÇÃÉãÅ[ÉvÇÕãÊä‘íÜêSÇ©ÇÁéüÇÃãÊä‘íÜêSÇ‹Ç≈
-    // ç≈èâÇ…îºãÊâÊíºêi
-    rdir = 0; ldir = 0;           // âÒì]ï˚å¸Çíºêi
-    STEP = 0;                     // ãóó£ÉJÉEÉìÉ^ÉäÉZÉbÉg
-    speed = spd;                  // ë¨ìxê›íË
-    control_mode = 1;             // épê®êßå‰ON
-    
-    if(sura_flag!=1){while( STEP < GO_STEP / 2 );}  // îºãÊä‘êiÇﬁ
-    else {STEP = GO_STEP/2;}
-    
-  	sura_flag=0;
-    place_update();               // åªç›ç¿ïWçXêV
-    LED_num(h_map[my][mx]);
-
-    if(my==0&&mx==0&&goal_flag==1)
-    {
-      while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-    	speed = 1;
-		  while( STEP < GO_STEP )if(SW_EXEC==SW_ON)return;
-		  com_turn(2);
-    	com_stop();
-    	countdown();
-    	goal_flag=0;
-    	hight_map_initalize();
-    	hight_map(x,y,0,T_MODE);
-    	control_mode=1;
-    	return;
-    }
-    else if(my==y&&mx==x)
-    {
-    	while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-    	speed = 1;
-      while( STEP < GO_STEP )if(SW_EXEC==SW_ON)return;
-      com_turn(2);
-    	com_stop();
-    	hight_map_initalize();
-    	hight_map(0,0,0,T_MODE);
-    	countdown();
-    	goal_flag=1;
-    	control_mode=1;
-    }
-    else{
-	  	course=map_load();
-	  	if(course==2)
-	  	{
-	  		while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
-	  		speed = 1;                    // écÇËîºãÊä‘Çå∏ë¨ÇµÇ»Ç™ÇÁíºêi
-      	while( STEP < GO_STEP )if(SW_EXEC==SW_ON)return;      // Ç≥ÇÁÇ…îºãÊä‘êiÇﬁ
-      	com_turn( 2 );                // âE90ìxê˘âÒ
-	  	}
-	  	else if(course<2)
-	  	  com_sura(course);
-	  	else
-	  		while(STEP<GO_STEP)if(SW_EXEC==SW_ON)return;
-	  }
-	  
-  }
-  
 }
 
-//------------------------------------------------------------------------
-//ñÓàÛÇÇΩÇ«ÇÈï˚å¸
-//------------------------------------------------------------------------
-uchar vector(void)
-{
-	uchar vec_tmp;
-	
-	vec_tmp=(back_map[my][mx]&0x0f);
-	
-	if(vec_tmp>head)
-		switch(vec_tmp/head)
-		{
-			case 1:
-				return 3;
-				break;
-			case 2:
-				return 0;
-				break;
-			case 4:
-				return 2;
-				break;
-			case 8:
-				return 1;
-				break;
-		}
-	else
-		switch(head/vec_tmp)
-		{
-			case 1:
-				return 3;
-				break;
-			case 2:
-				return 1;
-				break;
-			case 4:
-				return 2;
-				break;
-			case 8:
-				return 0;
-				break;
-		}
-  return 3;
+void make_shortest_run_command(uchar gx, uchar gy, uchar* command, uchar diag_flag ){
+    uchar x,y,dir;
+    x = 0;
+    y = 0;
+    dir = 0;
+    while (x==gx && y==gy){
+        *command = decide_action(x, y, gx, gy, dir, T_MODE);
+        update_state(*command, &x, &y, &dir );
+    }
 }
 
+
+#if 0
+void find_unsearched_block(uchar ox, uchar oy){
+	uchar x,y;
+	uchar cnt;
+	cnt=1
+			for (y=oy-cnt;y<oy+cnt;y++){
+				for(x=ox-cnt;x<ox+cnt;x++){
+
+				}
+			}
+
+}
+#endif
+
+
 /* ======================================================================= */
-/* ìôçÇê¸çÏê¨ÉÇÉWÉÖÅ[Éã                                                    */
+/* Á≠âÈ´òÁ∑ö‰ΩúÊàê„É¢„Ç∏„É•„Éº„É´                                                    */
 /* ======================================================================= */
-void hight_map(unsigned char gx, unsigned char gy, unsigned char h,unsigned char mode)
+void hight_map(uchar gx, uchar gy, uchar h, uchar mode)
 {
-    // (gy,gx)ÉSÅ[ÉãÇ…ÇµÇΩÇ¢ç¿ïW
-    // hégÇ¡ÇƒÇ¢Ç»Ç¢
-    // modeÅ@ñ¢íTçıãÊâÊÇÃï‡êîÇêîÇ¶ÇÈÇ©êîÇ¶Ç»Ç¢Ç©T_MODEÅFñ¢íTçıãÊâÊêîÇ¶Ç»Ç¢Åiç≈íZëñçséûÇÃåvéZÇ…égópÅj
-    
+	// (gy,gx)„Ç¥„Éº„É´„Å´„Åó„Åü„ÅÑÂ∫ßÊ®ô
+	// h‰Ωø„Å£„Å¶„ÅÑ„Å™„ÅÑ
+	// mode„ÄÄÊú™Êé¢Á¥¢Âå∫Áîª„ÅÆÊ≠©Êï∞„ÇíÊï∞„Åà„Çã„ÅãÊï∞„Åà„Å™„ÅÑ„ÅãT_MODEÔºöÊú™Êé¢Á¥¢Âå∫ÁîªÊï∞„Åà„Å™„ÅÑÔºàÊúÄÁü≠Ëµ∞Ë°åÊôÇ„ÅÆË®àÁÆó„Å´‰ΩøÁî®Ôºâ
+
 	uchar	pt0,pt1,ct;
-	short	x,y;
+	uchar	x,y;
 	uchar	wdata;
 
-    //ìôçÇê¸É}ÉbÉvÇç≈åÛï‡êî255Ç…ÉäÉZÉbÉg
+	//Á≠âÈ´òÁ∑ö„Éû„ÉÉ„Éó„ÇíÊúÄÂÄôÊ≠©Êï∞255„Å´„É™„Çª„ÉÉ„Éà
 	for (y=0;y<16;y++){
 		for (x=0;x<16;x++){
 			h_map[y][x] = 255;
 		}
 	}
-	h_map[gy][gx] = 0;//ÉSÅ[ÉãÇÃèÍèäÇÃï‡êîÇ0ï‡Ç…
+	h_map[gy][gx] = 0;//„Ç¥„Éº„É´„ÅÆÂ†¥ÊâÄ„ÅÆÊ≠©Êï∞„Çí0Ê≠©„Å´
 
 	pt0 = 0;
-	
+
 	do{
 		ct = 0;
 		pt1 = pt0+1;
-		
+
 		for (y=0;y<16;y++){
 			for (x=0;x<16;x++){
 				if (h_map[y][x]==pt0){
 					wdata=map[y][x];
-					if (mode==T_MODE){  //ñ¢íTçıãÊâÊÇ…ÇÕêiÇ‹Ç»Ç¢ÉÇÅ[Éh
+					if (mode==T_MODE){  //Êú™Êé¢Á¥¢Âå∫Áîª„Å´„ÅØÈÄ≤„Åæ„Å™„ÅÑ„É¢„Éº„Éâ
 						if (((wdata & 0x11) == 0x10)&&(y!=15)){
 							if (h_map[y+1][x] == 255){h_map[y+1][x] = pt1;ct++;}}
 						if (((wdata & 0x22) == 0x20)&&(x!=15)){
@@ -371,7 +200,9 @@ void hight_map(unsigned char gx, unsigned char gy, unsigned char h,unsigned char
 							if (h_map[y-1][x] == 255){h_map[y-1][x] = pt1;ct++;}}
 						if (((wdata & 0x88) == 0x80)&&(x!=0)){
 							if (h_map[y][x-1] == 255){h_map[y][x-1] = pt1;ct++;}}
-					}else{              //ñ¢íTçıãÊâÊÇ…êiÇﬁÉÇÅ[Éh
+					}else{              //Êú™Êé¢Á¥¢Âå∫Áîª„Å´ÈÄ≤„ÇÄ„É¢„Éº„Éâ
+
+
 						if (((wdata & 0x01) == 0x00)&&(y!=15)){
 							if (h_map[y+1][x] == 255){h_map[y+1][x] = pt1;ct++;}}
 						if (((wdata & 0x02) == 0x00)&&(x!=15)){
@@ -390,200 +221,434 @@ void hight_map(unsigned char gx, unsigned char gy, unsigned char h,unsigned char
 }
 
 
-#define LEFT90 (90)
-#define RIGHT90 (-90)
+void update_map(uchar x, uchar y, uchar dir){
+	// Â£Å„ÅÆ„ÅÇ„Çã„Å™„Åó„ÅßLED„ÇíÁÇπÁÅØ„Åô„Çã
+	// LED Â∑¶„Åã„ÇâÔºëÔºíÔºìÔºî
+#if 1
+	if (wall_ls)LED_on(1);
+	else LED_off(1);
+	if (wall_lf)LED_on(2);
+	else LED_off(2);
+	if (wall_rf)LED_on(3);
+	else LED_off(3);
+	if (wall_rs)LED_on(4);
+	else LED_off(4);
+#endif
 
-void search2018(unsigned char x,unsigned char y){
-    
-    unsigned char first_f = 1;      //ÉXÉ^Å[ÉgÇ∑ÇÈëOÇ©ÅHèâä˙íl ÇP
-    unsigned char goal_f  = 0;      //ÉSÅ[ÉãÇµÇΩÇ©ÇµÇƒÇ»Ç¢Ç©ÅHèâä˙íl 0
-    unsigned char search_end_f = 0; //íTçıèIóπÇ©ÅHèâä˙íl 0
-    short mx,my;
-    short gx = 7;
-    short gy = 7;
-    short dir = 0;
-    
-    while(1){
-        if (first_f == 1){//ÉXÉ^Å[Égèàóù
-            
-            //ç¿ïWìôÇÃèâä˙âª
-            mx=0;
-            my=1;
-            wait_sw_on();
-	        wait_ms(1000);
-	        
-            //é©ìÆìIÇ…ÉRÅ[ÉXÇÃê^ÇÒíÜÇ…ÉZÉbÉgÇµÉZÉìÉTÅ[ÉLÉÉÉäÉuÉåÅ[ÉVÉáÉì
-	        turn(RIGHT90);                  //âEå¸Ç´âE90ìx
-            straight(70, -100, 0, 2, 0);	//å„ëﬁÉPÉcÉ^ÉbÉ`
-	        straight(34, 500, 0, 2, 0);     //ê^ÇÒíÜÇ…ëOêi
-	        turn(LEFT90);                   //ëOå¸Ç´Ç»Ç®ÇËç∂90ìx
-	        straight(70, -100, 0, 2, 0);	//å„ëﬁÉPÉcÉ^ÉbÉ`
-	        wait_ms(500);
-	        update_center_ref();            //ÉZÉìÉTÅ[ÉLÉÉÉäÉuÉåÅ[ÉVÉáÉì
-	        set_wall_gain(5);               //êßå‰ÉQÉCÉìê›íË
-	        
-	        //É}ÉEÉXèoî≠
-            straight(H_SECTION + 34, speed, speed, acc, 1);  //124mmëOêi ÉXÉ^Å[Ég
-            first_f = 0;//ÉtÉâÉOÉäÉZÉbÉgÅiÉXÉ^Å[ÉgèIÇÌÇËÅj
-        
-        }
-        
-        else if (gx==mx & gy==my){//ÉSÅ[ÉãÇ…ì¸Ç¡ÇΩéûÇÃèàóù
-            
-        }
-        
-        else if (first_f==0 && mx==0 && my==0){//ÉXÉ^Å[ÉgÇ…ñﬂÇ¡ÇΩéûÇÃèàóù
-            
-        }
-        
-        else {//ïÅí ÇÃíTçı
-            update_map();//ï«èÓïÒÇçXêV
-            unsigned char action = decide_action(mx, my, gx, gy, dir);//íºêiÇ©ç∂Ç©âEÇ©çsìÆÇåàÇﬂÇÈ
-            move(action, speed, acc);//åàÇﬂÇΩçsìÆÇé¿çs
-            update_state(action, xm ,ym, dir);//çsìÆÇ…äÓÇ√Ç¢Çƒç¿ïWÇ∆ï˚å¸ÇçXêV
-        }
-    }
-    
+//Âêë„ÅÑ„Å¶„ÅÑ„ÇãÊñπÂêë„Å´Âøú„Åò„Å¶„ÄÅÂú∞Âõ≥„ÅÆÂ£ÅÊÉÖÂ†±„ÇíÊõ¥Êñ∞„Åô„Çã„ÄÇ
+	if ( dir == NORTH){//ÂåóÂêë„Åç„Å†„Å£„Åü„Çâ
+		set_map(x, y, NORTH, wall_lf | wall_rf );//ÂâçÂ£Å„ÅØORÂèñ„Çä
+		set_map(x, y, WEST , wall_ls );
+		set_map(x, y, EAST , wall_rs );
+	}
+
+	else if ( dir == EAST){//Êù±Âêë„Åç„Å†„Å£„Åü„Çâ
+		set_map(x, y, EAST ,wall_lf|wall_rf );
+		set_map(x, y, NORTH, wall_ls );
+		set_map(x, y, SOUTH, wall_rs);
+
+	}
+
+	else if ( dir == SOUTH){//ÂçóÂêë„Åç„Å†„Å£„Åü„Çâ
+		set_map(x, y, SOUTH, wall_lf|wall_rf );
+		set_map(x, y, EAST , wall_ls );
+		set_map(x, y, WEST , wall_rs);
+	}
+
+	else if ( dir == WEST){//Ë•øÂêë„Åç„Å†„Å£„Åü„Çâ
+		set_map(x, y, WEST , wall_lf|wall_rf );
+		set_map(x, y, SOUTH, wall_ls );
+		set_map(x, y, NORTH, wall_rs);
+
+	}
+	return;
 }
 
-void update_map(unsigned char x, unsigned char y, unsigned dir){
+short decide_action(uchar mx, uchar my, uchar gx, uchar gy, uchar dir, uchar mode){
 
-    if ( dir == NORTH){//ñkå¸Ç´ÇæÇ¡ÇΩÇÁ
-        set_map(x, y, NORTH, wall_lf | wallrf );//ëOï«ÇÕORéÊÇË
-        set_map(x, y, WEST , wall_ls );
-        set_map(x, y, EAST , wall_rs);        
-    }
-    
-    else if ( dir == EAST){//ìåå¸Ç´ÇæÇ¡ÇΩÇÁ
-        set_map(x, y, EAST ,wall_lf|wallrf );
-        set_map(x, y, NORTH, wall_ls );
-        set_map(x, y, SOUTH, wall_rs);        
-        
-    }
-    
-    else if ( dir == SOUTH){//ìÏå¸Ç´ÇæÇ¡ÇΩÇÁ
-        set_map(x, y, SOUTH, wall_lf|wallrf );
-        set_map(x, y, EAST , wall_ls );
-        set_map(x, y, WEST , wall_rs);        
-    }
-    
-    else if ( dir == WEST){//êºå¸Ç´ÇæÇ¡ÇΩÇÁ
-        set_map(x, y, WEST , wall_lf|wallrf );
-        set_map(x, y, SOUTH, wall_ls );
-        set_map(x, y, NORTH, wall_rs);        
-        
-    }
-    return;
+	uchar front=255, left=255, right=255;
+
+	hight_map(gx, gy, 0, mode);//Á≠âÈ´òÁ∑ö„Éû„ÉÉ„Éó‰Ωú„Çã
+	front=255;left=255;right=255;
+
+	if ( dir == NORTH){//ÂåóÂêë„Åç„Å†„Å£„Åü„Çâ
+		if (my<15 && get_map(mx,my,NORTH)==0) front = h_map[my+1][mx];
+		if (mx>0  && get_map(mx,my,WEST)==0) left  = h_map[my][mx-1];
+		if (mx<15 && get_map(mx,my,EAST)==0) right = h_map[my][mx+1];
+
+		if (front==255&&left==255&&right==255) return PIVOTTURN;
+		if (front<=left && front<=right)       return STRAIGHTRUN;
+		if (left<=front && left<=right)        return LEFTTURN;
+		if (right<=front && right<=left)       return RIGHTTURN;
+	}
+
+	else if ( dir == EAST){//Êù±Âêë„Åç„Å†„Å£„Åü„Çâ
+		if (mx<15 && get_map(mx,my,EAST)==0) front = h_map[my][mx+1];
+		if (my<15 && get_map(mx,my,NORTH)==0) left  = h_map[my+1][mx];
+		if (my>0  && get_map(mx,my,SOUTH)==0) right = h_map[my-1][mx];
+
+		if (front==255&&left==255&&right==255) return PIVOTTURN;
+		if (front<=left && front<=right)       return STRAIGHTRUN;
+		if (left<=front && left<=right)        return LEFTTURN;
+		if (right<=front && right<=left)       return RIGHTTURN;
+	}
+
+	else if ( dir == SOUTH){//ÂçóÂêë„Åç„Å†„Å£„Åü„Çâ
+		if (my>0  && get_map(mx,my,SOUTH)==0) front = h_map[my-1][mx];
+		if (mx<15 && get_map(mx,my,EAST)==0) left  = h_map[my][mx+1];
+		if (mx>0  && get_map(mx,my,WEST)==0) right = h_map[my][mx-1];
+
+		if (front==255&&left==255&&right==255) return PIVOTTURN;
+		if (front<=left && front<=right)       return STRAIGHTRUN;
+		if (left<=front && left<=right)        return LEFTTURN;
+		if (right<=front && right<=left)       return RIGHTTURN;
+
+	}
+
+	else if ( dir == WEST){//Ë•øÂêë„Åç„Å†„Å£„Åü„Çâ
+		if (mx>0  && get_map(mx,my,WEST)==0) front = h_map[my][mx-1];
+		if (my>0  && get_map(mx,my,SOUTH)==0) left  = h_map[my-1][mx];
+		if (my<15 && get_map(mx,my,NORTH)==0) right = h_map[my+1][mx];
+
+		if (front==255&&left==255&&right==255) return PIVOTTURN;
+		if (front<=left && front<=right)       return STRAIGHTRUN;
+		if (left<=front && left<=right)        return LEFTTURN;
+		if (right<=front && right<=left)       return RIGHTTURN;
+
+	}
+
+	return -1;
 }
 
-short decide_action(short mx, short my, short gx, short gy, short dir){
-    
-    short front, left, right;
-    
-    hight_map(gx, gy, 0, 0);//ìôçÇê¸É}ÉbÉvçÏÇÈ
-    
-    if ( dir == NORTH){//ñkå¸Ç´ÇæÇ¡ÇΩÇÁ
-        if (my<15) front = h_map[my+1][mx];
-        else front = 255;
-        
-        if (mx>0) left  = h_map[my][mx-1];
-        right = h_map[y][x+1];
-    }
-    
-    else if ( dir == EAST){//ìåå¸Ç´ÇæÇ¡ÇΩÇÁ
-        
-    }
-    
-    else if ( dir == SOUTH){//ìÏå¸Ç´ÇæÇ¡ÇΩÇÁ
-    
-    }
-    
-    else if ( dir == WEST){//êºå¸Ç´ÇæÇ¡ÇΩÇÁ
-        
-    }
-    
-    return;
-}
-    
-    
-}
 
-void move(unsigned char action, short speed, short acc){
+void move(uchar action){
 
-    //ï®óùÉpÉâÉÅÅ[É^ê›íË
-    short acc=4;
-	short speed=350;
-	short tspeed=350;
-	short pre=40;// defo 47
-	short slalen=85;// defo 73
-    
-    
-    if (action == STRAIGHT) {
-        //íºêi180mm
-        straight(SECTION, speed, speed, acc, 1);
-    }
-    
-    else if (action == LEFTTURN) {
-        //Left Turn
-        straight(pre, speed, tspeed, acc, 1);
+	//Áâ©ÁêÜ„Éë„É©„É°„Éº„ÇøË®≠ÂÆö
+	short acc=4;
+	short speed = SEARCH_SPEED;
+	short tspeed= SEARCH_TURN_SPEED;
+	short pre=PRE_LENGTH;//40;// defo 47
+	short slalen=SLA_LENGTH;//85;// defo 73
+    short range;
+    range=0;
+	if (action == STRAIGHTRUN) {
+		//Áõ¥ÈÄ≤180mm
+		straight(SECTION, speed, speed, acc, 1);
+	}
+
+	else if (action == LEFTTURN) {
+		//Left Turn
+	    //range=get_range();
+	    //if(range>pre)range=0;
+		straight(pre-range, speed, tspeed, acc, 1);
 		slalom(slalen, acc, 1, 0);
 		straight(pre, speed, speed, acc, 1);
-    }
-    
-    else if (action == RIGHTTURN) {
-        //Right Turn
-		straight(pre, speed, tspeed, acc, 1);
+	}
+
+	else if (action == RIGHTTURN) {
+		//Right Turn
+        //range=get_range();
+        //if(range>pre)range=0;
+		straight(pre-range, speed, tspeed, acc, 1);
 		slalom(slalen, acc, -1, 0);
 		straight(pre, speed, speed, acc, 1);
-    }
-    
-    else if (action == PIVOTTURN) {
-        //Pivot Turn
+	}
+
+	else if (action == PIVOTTURN) {
+		//Pivot Turn
 		straight(H_SECTION, speed, 0, acc, 1);
 		turn(180);
 		straight(H_SECTION, speed, speed, acc, 1);
-    }
+	}
+}
+
+void smove(uchar action, short speed){
+
+	//Áâ©ÁêÜ„Éë„É©„É°„Éº„ÇøË®≠ÂÆö
+	short acc=4;
+	//short speed = SEARCH_SPEED;
+	short tspeed= SEARCH_TURN_SPEED;
+	short pre=PRE_LENGTH;//40;// defo 47
+	short slalen=SLA_LENGTH;//85;// defo 73
+
+
+	if (action == STRAIGHTRUN) {
+		//Áõ¥ÈÄ≤180mm
+		straight(SECTION, speed, speed, acc, 1);
+	}
+
+	else if (action == LEFTTURN) {
+		//Left Turn
+		straight(pre, speed, tspeed, acc, 1);
+		slalom(slalen, acc, 1, 0);
+		straight(pre, speed, speed, acc, 1);
+	}
+
+	else if (action == RIGHTTURN) {
+		//Right Turn
+		straight(pre, speed, tspeed, acc, 1);
+		slalom(slalen, acc, -1, 0);
+		straight(pre, speed, speed, acc, 1);
+	}
+
+	else if (action == PIVOTTURN) {
+		//Pivot Turn
+		straight(H_SECTION, speed, 0, acc, 1);
+		turn(180);
+		straight(H_SECTION, speed, speed, acc, 1);
+	}
 }
 
 
 
+void update_state(uchar act, uchar *x, uchar *y, uchar *dir){
 
-short make_sim_map(void){
-    char smap[32][49]={
-        "+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+",
-        "|   |                                                           |",//15
-        "+   +   +   +---+---+---+---+---+---+---+---+---+---+   +   +---+",
-        "|       |   |               |               |       |   |       |",//14
-        "+   +---+   +   +---+---+   +   +---+---+   +   +   +---+---+   +",
-        "|           |   |       |       |       |       |           |   |",//13
-        "+   +---+   +   +   +   +---+---+   +   +---+---+---+---+   +   +",
-        "|           |       |               |           |   |       |   |",//12
-        "+   +---+---+---+---+---+---+---+---+---+---+---+---+   +---+   +",
-        "|   |       |   |   |   |   |   |   |   |   |   |   |       |   |",//11
-        "+   +   +---+---+---+---+---+---+---+---+---+---+---+---+   +   +",
-        "|   |   |   |   |   |   |   |   |   |   |   |   |           |   |",//10
-        "+   +   +---+---+---+---+---+---+---+---+---+---+---+   +---+   +",
-        "|   |       |   |   |   |   |   |   |   |   |   |           |   |",// 9
-        "+   +---+---+---+---+---+---+---+---+---+---+---+---+   +---+   +",
-        "|   |       |   |   |   |   |       |   |   |   |           |   |",// 8
-        "+   +   +---+---+---+---+---+   +   +---+---+---+---+   +---+   +",
-        "|   |   |   |   |   |   |   |       |   |                   |   |",// 7
-        "+   +   +---+---+---+---+---+---+---+---+---+   +---+---+---+   +",
-        "|   |       |   |   |   |   |   |   |   |   |               |   |",// 6
-        "+   +---+---+---+---+---+---+---+---+---+---+---+---+---+   +   +",
-        "|   |       |   |   |   |   |   |   |   |   |   |   |   |   |   |",// 5
-        "+   +   +---+---+---+---+---+---+---+---+---+---+---+---+---+   +",
-        "|   |       |   |   |   |   |   |   |   |   |   |   |   |   |   |",// 4
-        "+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+   +",
-        "|   |       |   |   |   |   |   |   |   |   |   |   |   |   |   |",// 3
-        "+   +   +---+---+---+---+---+---+---+---+---+---+---+---+---+   +",
-        "|   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |",// 2
-        "+   +   +---+---+---+---+---+---+---+---+---+---+---+---+---+   +",
-        "|       |   |   |   |   |   |   |   |   |   |   |   |   |   |   |",// 1
-        "+   +---+   +   +   +---+---+---+---+---+---+---+---+---+---+   +",
-        "|   |                                                           |",// 0
-        "+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+"
-        };
-        // 0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15 
-    
+	if (act==STRAIGHTRUN){
+		if (*dir==NORTH){
+			(*y)++;
+		}
+		else if (*dir == EAST){
+			(*x)++;
+		}
+		else if (*dir == SOUTH ){
+			(*y)--;
+		}
+		else if (*dir == WEST){
+			(*x)--;
+		}
+	}
+
+	else if (act==LEFTTURN){
+		if (*dir==NORTH){
+			(*x)--;
+		}
+		else if (*dir == EAST){
+			(*y)++;
+		}
+		else if (*dir == SOUTH ){
+			(*x)++;
+		}
+		else if (*dir == WEST){
+			(*y)--;
+		}
+		(*dir)--;
+		*dir=(*dir) & 0x03;
+	}
+
+	else if (act==RIGHTTURN){
+		if (*dir==NORTH){
+			(*x)++;
+		}
+		else if (*dir == EAST){
+			(*y)--;
+		}
+		else if (*dir == SOUTH ){
+			(*x)--;
+		}
+		else if (*dir == WEST){
+			(*y)++;
+		}
+
+		(*dir)++;
+		*dir=(*dir) & 0x03;
+	}
+
+	else if (act==PIVOTTURN){
+		if (*dir==NORTH){
+			(*y)--;
+		}
+		else if (*dir == EAST){
+			(*x)--;
+		}
+		else if (*dir == SOUTH ){
+			(*y)++;
+		}
+		else if (*dir == WEST){
+			(*x)++;
+		}
+		(*dir)++;
+		(*dir)++;
+		*dir=(*dir) & 0x03;
+	}
+
+	return ;
 }
+
+
+void make_mapdata(void)
+{
+	uchar i,j;
+	uchar n_wall,e_wall,s_wall,w_wall;
+	//2017 Clasic mouse expart final maze
+	uchar smap[33][66]={
+			"+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+",//    0
+			"|   |                                                           |",//15  1
+			"+   +   +   +---+---+---+---+---+---+---+---+---+---+   +   +---+",//    2
+			"|       |   |               |               |       |   |       |",//14  3
+			"+   +---+   +   +---+---+   +   +---+---+   +   +   +---+---+   +",//    4
+			"|           |   |       |       |       |       |           |   |",//13  5
+			"+   +---+   +   +   +   +---+---+   +   +---+---+---+---+   +   +",//    6
+			"|           |       |               |               |       |   |",//12  7
+			"+   +---+---+---+---+---+---+---+---+---+---+---+   +   +---+   +",//    8
+			"|   |       |       |           |       |   |       |       |   |",//11  9
+			"+   +   +   +   +   +   +   +   +   +   +   +   +---+---+   +   +",//   10
+			"|   |   |       |       |   |       |           |           |   |",//10 11
+			"+   +   +---+---+---+---+---+---+---+---+---+---+---+   +---+   +",//   12
+			"|   |       |           |               |       |           |   |",// 9 13
+			"+   +---+   +   +   +---+   +   +---+   +   +   +---+   +---+   +",//   14
+			"|   |       |   |       |   |       |       |               |   |",// 8 15
+			"+   +   +---+   +---+   +   +   +   +---+---+---+---+   +---+   +",//   16
+			"|   |   |       |       |   |       |   |                   |   |",// 7 17
+			"+   +   +   +---+   +---+   +---+---+   +   +   +---+---+---+   +",//   18
+			"|   |       |           |                   |               |   |",// 6 19
+			"+   +---+---+   +---+---+---+---+---+---+---+---+---+---+   +   +",//   20
+			"|   |           |       |   |       |   |           |       |   |",// 5 21
+			"+   +   +---+---+   +   +   +   +   +   +   +   +---+   +---+   +",//   22
+			"|   |       |       |           |           |   |   |       |   |",// 4 23
+			"+   +---+   +   +---+---+   +---+---+   +---+   +   +---+   +   +",//   24
+			"|   |       |       |   |   |       |   |       |           |   |",// 3 25
+			"+   +   +---+---+   +   +---+   +   +---+   +---+   +---+---+   +",//   26
+			"|   |   |           |           |           |   |   |           |",// 2 27
+			"+   +   +   +---+---+   +---+---+---+---+---+   +   +   +   +   +",//   28
+			"|       |   |   |   |                               |   |   |   |",// 1 29
+			"+   +---+   +   +   +---+---+---+---+---+---+---+---+---+---+   +",//   30
+			"|   |                                                           |",// 0 31
+			"+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+"//    32
+			// 0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
+	};
+
+	for (i=0;i<16;i++){//ÂçóÂåóÊñπÂêë
+		for (j=0;j<16; j++) {//Êù±Ë•øÊñπÂêë
+			n_wall = 0x01*(smap[30-2*i][2+4*j]=='-');
+			e_wall = 0x02*(smap[31-2*i][4+4*j]=='|');
+			s_wall = 0x04*(smap[32-2*i][2+4*j]=='-');
+			w_wall = 0x08*(smap[31-2*i][4*j]=='|');
+			map[i][j] = s_wall | w_wall | e_wall | n_wall;
+		}
+	}
+}
+
+
+
+#if 0
+//------------------------------------------------------------------------
+//ÊúÄÁü≠
+//------------------------------------------------------------------------
+void most_short(char y,char x,int spd)
+{
+	uchar course;
+	LED_num(spd/50);
+	pause(500);
+	control_mode=1;
+	if(over_flag!=1){
+		hight_map_initalize();
+		hight_map(y,x,0,T_MODE);
+	}
+	else
+		over_flag=0;
+
+	while( 1 ){
+		// Ôºë„Å§„ÅÆ„É´„Éº„Éó„ÅØÂå∫Èñì‰∏≠ÂøÉ„Åã„ÇâÊ¨°„ÅÆÂå∫Èñì‰∏≠ÂøÉ„Åæ„Åß
+		// ÊúÄÂàù„Å´ÂçäÂå∫ÁîªÁõ¥ÈÄ≤
+		rdir = 0; ldir = 0;           // ÂõûËª¢ÊñπÂêë„ÇíÁõ¥ÈÄ≤
+		STEP = 0;                     // Ë∑ùÈõ¢„Ç´„Ç¶„É≥„Çø„É™„Çª„ÉÉ„Éà
+		speed = spd;                  // ÈÄüÂ∫¶Ë®≠ÂÆö
+		control_mode = 1;             // ÂßøÂã¢Âà∂Âæ°ON
+
+		if(sura_flag!=1){while( STEP < GO_STEP / 2 );}  // ÂçäÂå∫ÈñìÈÄ≤„ÇÄ
+		else {STEP = GO_STEP/2;}
+
+		sura_flag=0;
+		place_update();               // ÁèæÂú®Â∫ßÊ®ôÊõ¥Êñ∞
+		LED_num(h_map[my][mx]);
+
+		if(my==0&&mx==0&&goal_flag==1)
+		{
+			while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
+			speed = 1;
+			while( STEP < GO_STEP )if(SW_EXEC==SW_ON)return;
+			com_turn(2);
+			com_stop();
+			countdown();
+			goal_flag=0;
+			hight_map_initalize();
+			hight_map(x,y,0,T_MODE);
+			control_mode=1;
+			return;
+		}
+		else if(my==y&&mx==x)
+		{
+			while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
+			speed = 1;
+			while( STEP < GO_STEP )if(SW_EXEC==SW_ON)return;
+			com_turn(2);
+			com_stop();
+			hight_map_initalize();
+			hight_map(0,0,0,T_MODE);
+			countdown();
+			goal_flag=1;
+			control_mode=1;
+		}
+		else{
+			course=map_load();
+			if(course==2)
+			{
+				while( STEP < GO_STEP - ( speed_now - 1 ) * 2 );
+				speed = 1;                    // ÊÆã„ÇäÂçäÂå∫Èñì„ÇíÊ∏õÈÄü„Åó„Å™„Åå„ÇâÁõ¥ÈÄ≤
+				while( STEP < GO_STEP )if(SW_EXEC==SW_ON)return;      // „Åï„Çâ„Å´ÂçäÂå∫ÈñìÈÄ≤„ÇÄ
+				com_turn( 2 );                // Âè≥90Â∫¶ÊóãÂõû
+			}
+			else if(course<2)
+				com_sura(course);
+			else
+				while(STEP<GO_STEP)if(SW_EXEC==SW_ON)return;
+		}
+
+	}
+
+}
+
+//------------------------------------------------------------------------
+//Áü¢Âç∞„Çí„Åü„Å©„ÇãÊñπÂêë
+//------------------------------------------------------------------------
+unsigned char vector(void)
+{
+	uchar vec_tmp;
+
+	vec_tmp=(back_map[my][mx]&0x0f);
+
+	if(vec_tmp>head)
+		switch(vec_tmp/head)
+		{
+		case 1:
+			return 3;
+			break;
+		case 2:
+			return 0;
+			break;
+		case 4:
+			return 2;
+			break;
+		case 8:
+			return 1;
+			break;
+		}
+	else
+		switch(head/vec_tmp)
+		{
+		case 1:
+			return 3;
+			break;
+		case 2:
+			return 1;
+			break;
+		case 4:
+			return 2;
+			break;
+		case 8:
+			return 0;
+			break;
+		}
+	return 3;
+}
+#endif
