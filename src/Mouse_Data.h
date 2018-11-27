@@ -5,7 +5,7 @@
 #define BAT_CELL		(3)
 
 //タイヤ直径[mm] 1000倍の値 進み過ぎる時は増やす
-#define TIRE_DIAMETER	((26.687) * 1000.0)
+#define TIRE_DIAMETER	((26.80) * 1000.0) //26.687 26.85
 //トレッド幅[mm] 1000倍の値 回転しすぎる時は減らす
 #define TREAD			((74.622) * 1000.0)
 #define MOTOR_STEP_NUM	(400L)
@@ -27,8 +27,8 @@
 //迷路半区画の距離[mm]
 #define H_SECTION		(SECTION/2)
 
-#define GOALX (6)
-#define GOALY (10)
+#define GOALX (7)
+#define GOALY (7)
 
 
 #endif /* MOUSE_DATA_H_ */

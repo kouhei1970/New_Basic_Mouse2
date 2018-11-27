@@ -31,6 +31,7 @@ void update_wall_sensor(char sensor, char led);
 short get_wall_diff(void);
 void update_center_ref(void);
 void output_wall_sensor(void);
+short get_range(void);
 
 
 #endif /* WALL_SENSOR_H_ */

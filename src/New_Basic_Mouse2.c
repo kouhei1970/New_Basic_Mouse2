@@ -51,6 +51,8 @@ void main(void)
 	//check_battery();	//動作確認が終わったらコメントアウトを外してください
 	reset_log();
 
+	pipo_buzzer();
+
 	while(1){
 		select_mode();
 	}
@@ -182,55 +184,91 @@ void mode7(void)
 	}
 }
 
+//スラローム調整
+void mode8(void)
+{
+	short acc=4;
+	short speed=580;
+	short tspeed=350;
+	short pre=40;// after 40
+	short slalen=91;// after 91
+
+    //自動的にコースの真ん中にセットしセンサーキャリブレーション
+     turn(RIGHT90);                  //右向き右90度
+     straight(70, -100, 0, 2, 0);    //後退ケツタッチ
+     straight(34, 500, 0, 2, 0);     //真ん中に前進
+     turn(LEFT90);                   //前向きなおり左90度
+     straight(70, -100, 0, 2, 0);    //後退ケツタッチ
+     wait_ms(500);
+     update_center_ref();            //センサーキャリブレーション
+     set_wall_gain(5);//5            //制御ゲイン設定
+
+     //マウス出発
+     hotel_buzzer();
+
+     straight(90 + 34 + 180, speed, speed, acc, 1);  //124mm前進 スタート
+
+
+
+	while(1){
+		straight(pre, speed, tspeed, acc, 0);
+		slalom(slalen, acc, -1, 0);
+		straight(pre, speed, speed, acc, 0);
+	}
+}
+
+#if 0
 //左手法（スラローム）
 void mode8(void)
 {
-	wait_sw_on();
-	wait_ms(1000);
+    wait_sw_on();
+    wait_ms(1000);
 
-	turn(-90);
-	straight(70, -100, 0, 2, 0);	//ケツタッチ
-	straight(34, 500, 0, 2, 0);
-	turn(90);
+    turn(-90);
+    straight(70, -100, 0, 2, 0);    //ケツタッチ
+    straight(34, 500, 0, 2, 0);
+    turn(90);
 
-	straight(70, -100, 0, 2, 0);	//ケツタッチ
+    straight(70, -100, 0, 2, 0);    //ケツタッチ
 
-	wait_ms(500);
-	update_center_ref();
-	set_wall_gain(5);
+    wait_ms(500);
+    update_center_ref();
+    set_wall_gain(5);
 
-	straight(34, 500, 0, 2, 0);
+    straight(34, 500, 0, 2, 0);
 
 
-	short acc=4;
-	short speed=350;
-	short tspeed=350;
-	short pre=40;// defo 47
-	short slalen=85;// defo 73
-	straight(H_SECTION , speed, speed, acc, 1);
+    short acc=4;
+    short speed=350;
+    short tspeed=350;
+    short pre=40;// defo 47
+    short slalen=85;// defo 73
+    straight(H_SECTION , speed, speed, acc, 1);
 
-	while(1){
-		if(wall_ls == 0){							//左壁なし
-			straight(pre, speed, tspeed, acc, 1);
-			slalom(slalen, acc, 1, 0);
-			straight(pre, speed, speed, acc, 1);
-		}
-		else if((wall_lf == 0) && (wall_rf == 0)){	//前壁なし
-			straight(SECTION, speed, speed, acc, 1);
-		}
-		else if(wall_rs == 0){						//右壁なし
-			straight(pre, speed, tspeed, acc, 1);
-			slalom(slalen, acc, -1, 0);
-			straight(pre, speed, speed, acc, 1);
-		}
-		else{										//袋小路
-			straight(H_SECTION, speed, 0, acc, 1);
-			turn(180);
-			straight(H_SECTION, speed, speed, acc, 1);
-		}
-	}
+    while(1){
+        if(wall_ls == 0){                           //左壁なし
+            straight(pre, speed, tspeed, acc, 1);
+            slalom(slalen, acc, 1, 0);
+            straight(pre, speed, speed, acc, 1);
+        }
+        else if((wall_lf == 0) && (wall_rf == 0)){  //前壁なし
+            straight(SECTION, speed, speed, acc, 1);
+        }
+        else if(wall_rs == 0){                      //右壁なし
+            straight(pre, speed, tspeed, acc, 1);
+            slalom(slalen, acc, -1, 0);
+            straight(pre, speed, speed, acc, 1);
+        }
+        else{                                       //袋小路
+            straight(H_SECTION, speed, 0, acc, 1);
+            turn(180);
+            straight(H_SECTION, speed, speed, acc, 1);
+        }
+    }
 
 }
+#endif
+
 
 
 //mapデータの保存
@@ -248,6 +286,7 @@ void mode9(void)
 	output_map();	//map配列をPCに出力
 	save_map();		//map配列をデータフラッシュに保存
 	reset_map();	//map配列をリセット
+    save_map();     //map配列をデータフラッシュに保存
 	load_map();		//データフラッシュからmap配列にデータをロード
 	output_map();	//map配列をPCに出力
 }
@@ -288,6 +327,7 @@ void mode11(void)
 //
 void mode12(void)
 {
+    load_map();
 	output_map();
 }
 
@@ -296,12 +336,16 @@ void mode13(void)
 {
 	while(1){
 
-		wait_ms(1000);
+		wait_ms(500);
 		church_save_buzzer();
-		wait_ms(1000);
+		wait_ms(500);
 		hotel_buzzer();
-		wait_ms(1000);
-		level_up_buzzer();
+        wait_ms(500);
+        level_up_buzzer();
+        wait_ms(500);
+        coin_buzzer();
+        wait_ms(500);
+        pipo_buzzer();
 
 		/*
 		sound_buzzer(scale[BUZ_LA0], 500);
@@ -328,7 +372,11 @@ void mode13(void)
 //
 void mode14(void)
 {
+    while(1){
+        if(get_sw_state(EXEC))
+        coin_buzzer();
 
+    }
 }
 
 //スイッチを押したらLEDが点灯する

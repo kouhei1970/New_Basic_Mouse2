@@ -75,6 +75,7 @@ void reset_map(void)
 			map[y][x] = 0x00;
 			if((x == 0)&&(y == 0))	map[y][x]  = 0xfe;
 			if((x == 0)&&(y == 1))	map[y][x]  = 0xc8;
+			if((x == 1)&&(y == 0))	map[y][x]  = 0xcc;
 			if(y == (MAZE_SIZE-1))	map[y][x] |= 0x11;
 			if(x == (MAZE_SIZE-1))	map[y][x] |= 0x22;
 			if(y == 0)				map[y][x] |= 0x44;

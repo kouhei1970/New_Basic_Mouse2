@@ -33,10 +33,10 @@ volatile char	wall_lf;		//左前センサー壁有無
 volatile char	wall_ls;		//左横センサー壁有無
 volatile char	wall_rs;		//右横センサー壁有無
 volatile char	wall_rf;		//右前センサー壁有無
-short	thre_lf = 400;	//左前センサー壁有無しきい値
+short	thre_lf = 350;	//左前センサー壁有無しきい値
 short	thre_ls = 900;	//左横センサー壁有無しきい値
 short	thre_rs = 900;	//右横センサー壁有無しきい値
-short	thre_rf = 400;	//右前センサー壁有無しきい値
+short	thre_rf = 350;	//右前センサー壁有無しきい値
 
 void init_wall_sensor(void)
 {
@@ -245,11 +245,27 @@ void update_center_ref(void)
 //壁センサーの値を出力する
 void output_wall_sensor(void)
 {
+    short range;
 	wall_sensor_en = 1;
 	while(!get_sw_state(EXEC)){//EXECスイッチが押されたらループから抜ける
+	    range=get_range();
 		wait_ms(50);
-		xprintf("lf:%4d   ls:%4d   rs:%4d   rf:%4d\n", sensor_lf, sensor_ls, sensor_rs, sensor_rf);
+		xprintf("lf,%4d,   ls,%4d,   rs,%4d,   rf,%4d,   range,%4d\n", sensor_lf, sensor_ls, sensor_rs, sensor_rf, range);
 	}
 	wait_sw_off();
 	wall_sensor_en = 0;
+}
+
+short get_range(void)
+{
+    long r_range,l_range,range;
+
+    if(wall_lf||wall_rf){
+        l_range = 114 * sensor_lf - 95010 ;
+        r_range = 159 * sensor_rf - 104208 ;
+        range = (l_range+r_range) / 2000 ;
+        return (short)range;
+    }
+    else return 0;
+
 }

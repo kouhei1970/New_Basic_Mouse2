@@ -22,7 +22,7 @@
 #define SEARCH_SPEED (580)
 #define SEARCH_TURN_SPEED (350)
 #define SEARCH_ACC (4)
-#define PRE_LENGTH (36)//34
+#define PRE_LENGTH (40)//34
 #define SLA_LENGTH (91)//90
 
 #define STRAIGHTRUN (0)

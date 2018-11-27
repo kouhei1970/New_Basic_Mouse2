@@ -130,3 +130,18 @@ void church_save_buzzer(void){
 	wait_ms(40);
 	sound_buzzer(scale[BUZ_DO2], 600);
 }
+
+void coin_buzzer(void){
+    sound_buzzer(scale[BUZ_SI1]*4, 100);
+    wait_ms(5);
+    sound_buzzer(scale[BUZ_MI2]*4, 200);
+    //wait_ms(5);
+    //sound_buzzer(scale[BUZ_MI2]*2, 200);
+}
+
+void pipo_buzzer(void){
+    sound_buzzer(2000, 150);
+    wait_ms(20);
+    sound_buzzer(1000, 150);
+    wait_ms(20);
+}
