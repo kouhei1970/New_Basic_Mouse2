@@ -138,7 +138,7 @@ void mode6(void)
 	wait_ms(1000);
 	LED_on(4);
 	for(short i = 0; i < 1; i++){
-		cturn(360*5);
+		cturn(360*20);
 	}
 	LED_off(4);
 }
@@ -190,8 +190,8 @@ void mode8(void)
 	short acc=4;
 	short speed=580;
 	short tspeed=350;
-	short pre=40;// after 40
-	short slalen=91;// after 91
+	short pre=39;// after 40
+	short slalen=910;// after 91
 
     //自動的にコースの真ん中にセットしセンサーキャリブレーション
      turn(RIGHT90);                  //右向き右90度
@@ -201,12 +201,12 @@ void mode8(void)
      straight(70, -100, 0, 2, 0);    //後退ケツタッチ
      wait_ms(500);
      update_center_ref();            //センサーキャリブレーション
-     set_wall_gain(5);//5            //制御ゲイン設定
+     set_wall_gain(0);//5            //制御ゲイン設定
 
      //マウス出発
      hotel_buzzer();
 
-     straight(90 + 34 + 180, speed, speed, acc, 1);  //124mm前進 スタート
+     straight(90 + 34 + 45, speed, speed, acc, 1);  //124mm前進 スタート
 
 
 
@@ -369,14 +369,12 @@ void mode13(void)
 	}
 }
 
-//
+//Sensor value output
 void mode14(void)
 {
-    while(1){
-        if(get_sw_state(EXEC))
-        coin_buzzer();
+    while(!get_sw_state(EXEC))
+        output_wall_sensor();
 
-    }
 }
 
 //スイッチを押したらLEDが点灯する

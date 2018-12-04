@@ -5,9 +5,9 @@
 #define BAT_CELL		(3)
 
 //タイヤ直径[mm] 1000倍の値 進み過ぎる時は増やす
-#define TIRE_DIAMETER	((26.80) * 1000.0) //26.687 26.85
+#define TIRE_DIAMETER	((26.524) * 1000.0) //26.687 26.85
 //トレッド幅[mm] 1000倍の値 回転しすぎる時は減らす
-#define TREAD			((74.622) * 1000.0)
+#define TREAD			((74.542) * 1000.0)
 #define MOTOR_STEP_NUM	(400L)
 
 //最低速度[mm/s] 小さくしすぎないこと

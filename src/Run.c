@@ -184,12 +184,12 @@ void slalom(short length, short acc, char dir, char wall_control)
 	run_mode = SLALOM;
 
 	short start_speed = now_speed;
-	long target_step = len_to_step(length);
+	long target_step = ((unsigned long)(MOTOR_STEP_NUM * 2 * 100) * (length) / (unsigned long)(PI*TIRE_DIAMETER)  );
 
 	short accel_length = length/2;
 	short brake_length = length/2;
 
-	long brake_step = target_step - len_to_step(brake_length);
+	long brake_step = target_step - ((unsigned long)(MOTOR_STEP_NUM * 2 * 100) * (brake_length) / (unsigned long)(PI*TIRE_DIAMETER)  );;
 
 	//減速開始まで待つ
 	while(motor_step_sum < brake_step);
@@ -296,14 +296,14 @@ void cturn(short angle)
 
 	reset_motor_step();
 	speed_control_en = 1;
-	target_speed = MIN_SPEED;
+	target_speed = 350;//MIN_SPEED;
 	acceleration = TURN_ACC;
 	run_mode = TURN;
 	wall_sensor_en = 0;
 	wall_control_en = 0;
 
 	//減速開始まで待つ
-	while(motor_step_sum < (target_step / 2));
+	while(motor_step_sum < (98*target_step / 100));
 
 	target_speed = 1;
 
