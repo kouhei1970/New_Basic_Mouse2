@@ -44,4 +44,6 @@ Step = refarence_length / dL
 - refarence_length : 目標の距離
 - dL : １ステップあたりの前進距離
 
+<!---
 ## 浮動小数点演算のできないマイコンでの計算精度に関する考慮事項
+--->
